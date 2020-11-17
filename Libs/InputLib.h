@@ -1,3 +1,13 @@
+/*
+    Input Library
+
+    Autor: Vitor (Troloze) Di Lorenzzi
+
+    Este software deve ser utilizado somente com autorização do autor.
+ */
+
+
+
 #ifndef __InputLib_Tro
 #define __InputLib_Tro
 
@@ -67,10 +77,8 @@ typedef struct inputMouse{
 
 /**
  * \brief Função retorna o estado do teclado, mostrando os estados de todo o teclado.
- * 
- * \param oks (OldKeyStates) Esse parâmetro mostra o estado anterior do teclado, usado para comparação.
  */
-void createNewKeyStates(Uint8 * oks);
+void createNewKeyStates();
 
 /**
  * \brief Atualiza o estado da entrada.
@@ -85,22 +93,20 @@ int updateState(int oldState, bool newState);
 /**
  * \brief Essa função obtem um eixo num vetor, a partir de seu nome.
  * 
- * \param array Vetor cujo eixo será extraído.
  * \param name Nome do eixo a ser obtido.
  * 
  * \return Eixo cujo nome foi dado como parâmetro.
  */
-inputAxis getAxis(inputAxis * array, char * name);
+inputAxis getAxis(char * name);
 
 /**
  * \brief Essa função obtem um gatilho num vetor, a partir de seu nome.
  * 
- * \param array Vetor cujo gatilho será extraído.
  * \param name Nome do gatilho a ser obtido.
  * 
  * \return Gatilho cujo nome foi dado como parâmetro.
  */
-inputTrigger getTrigger(inputTrigger * array, char * name);
+inputTrigger getTrigger(char * name);
 
 /**
  * \brief Cria um novo eixo a partir de seus parâmetros e o retorna.
@@ -112,52 +118,70 @@ inputTrigger getTrigger(inputTrigger * array, char * name);
  * 
  * \return Um novo eixo criado a partir dos parâmetros.
  */
-inputAxis createAxis(char * name, Uint8 weight, short int posKey, short int negKey);
+void createAxis(char * name, Uint8 weight, short int posKey, short int negKey);
 
 /**
  * \brief Cria um novo gatilho a partir de seus parâmetros e o retorna.
  * 
  * \param name Nome do novo gatilho.
- * \param weight Peso do novo gatilho.
- * \param posKey Valor da tecla positiva do gatilho.
- * \param negKey Valor da tecla negativa do gatilho.
+ * \param triggerKey Valor da tecla do gatilho.
  * 
  * \return Um novo gatilho criado a partir dos parâmetros.
  */
-inputTrigger createTrigger(char * name, short int triggerKey);
+void createTrigger(char * name, short int triggerKey);
+
+/**
+ * \brief Destrói o eixo com o nome dado.
+ * 
+ * \param name Nome do eixo a ser destruído.
+ */
+void destroyAxis(char * name);
+
+/**
+ * \brief Destrói o gatilho com o nome dado.
+ * 
+ * \param name Nome do gatilho a ser destruído.
+ */
+void destroyTrigger(char * name);
 
 /**
  * \brief Atualiza todos os eixos num vetor.
- * 
- * \param array Vetor cujos eixos serão atualizados.
- * \param keyStates Vetor com o estado atual do teclado.
  */
-void updateAxis(inputAxis * array, const Uint8 * keyStates);
+void updateAxis();
 
 /**
  * \brief Atualiza todos os gatilhos num vetor.
- * 
- * \param array Vetor cujos gatilhos serão atualizados.
- * \param keyStates Vetor com o estado atual do teclado.
  */
-void updateTrigger(inputTrigger * array, const Uint8 * keyState);
+void updateTrigger();
 
 /**
  * \brief Atualiza o struct que guarda os dados do mouse.
- * 
- * \param mouse Ponteiro para o struct do mouse a ser atualizado.
- * 
  */
-void updateMouse(inputMouse * mouse);
+void updateMouse();
 
 /**
  * \brief Atualiza tudo relacionado ao sistema de Input.
- * 
- * \param keyState Representa o estado do teclado no frame atual, isso será atualizado.
- * \param tArray Vetor que guarda os gatilhos, os valores de todos os gatilhos serão atualizados.
- * \param aArray Vetor que guarda os eixos, os valores de todos os eixos serão atualizados.
- * \param mouse Variável que guarda os dados do mouse, seus valores serão atualizados.
  */
-void inputUpdate(Uint8 * keyStates, inputTrigger * tArray, inputAxis * aArray, inputMouse * mouse);
+void inputUpdate();
+
+/**
+ * \brief Inicializa o sistema de Entrada.
+ */
+void inputInit();
+
+/**
+ * \brief Finaliza o sistema de Entrada.
+ */
+void inputShut();
+
+/**
+ * \brief Anula todos os eixos.
+ */
+void resetAxis();
+
+/**
+ * \brief Anula todos os gatilhos.
+ */
+void resetTrigger();
 
 #endif

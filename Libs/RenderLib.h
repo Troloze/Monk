@@ -6,15 +6,15 @@
 #include <SDL2/SDL_image.h>
 
 #define width 1024
-#define height 768
+#define height 1024
 #define vWidth 256
 #define vHeight 192
 #define wRatio width/vWidth
 #define hRatio height/vHeight
 
-SDL_Texture * loadTexture(SDL_Renderer * renderer, const char * path);
+SDL_Surface * loadSurface(char * path);
 
-bool renderInit(SDL_Window * window, SDL_Renderer * renderer);
-void renderShut(SDL_Window * window, SDL_Renderer * renderer);
+bool renderInit(SDL_Window ** window);
+void renderShut(SDL_Window ** window);
 
 #endif

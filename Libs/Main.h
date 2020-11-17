@@ -12,7 +12,7 @@
 #include "RenderLib.h"
 #include "AudioLib.h"
 
-bool init(SDL_Window * window, SDL_Renderer * renderer);
-void shut(SDL_Window * window, SDL_Renderer * renderer);
+bool init(SDL_Window ** window);
+void shut(SDL_Window ** window);
 
 #endif
