@@ -17,11 +17,7 @@ int main(int argc, char ** argv) {
 
     SDL_Texture * mTexture;     // Ponteiro para a textura do display.
 
-    init(&mWindow);   // Inicializando todos os sistemas do SDL
-
-    mSurface = SDL_GetWindowSurface(mWindow);
-    SDL_Surface * nSurface = loadSurface("Sem título.bmp");
-    SDL_BlitSurface(nSurface, NULL, mSurface, NULL);
+    init();   // Inicializando todos os sistemas do SDL
 
     Uint8 * keyStates = malloc(sizeof(Uint8) * SDL_NUM_SCANCODES);  // Vetor responsável por armazenar o estado do teclado.
     inputAxis axisArray[Axis_Ammount];                              // Vetor responsável por armazenar os dados de todos os eixos de entrada.
@@ -44,28 +40,26 @@ int main(int argc, char ** argv) {
 
         // Update do sistema de entrada.
         inputUpdate();
-        printf("Hor: %.2lf\n", getAxis("Horizontal").value);
         if (getTrigger("Exit").value == 1) {
             running = false;
         }
 
         
         frameDelta = SDL_GetTicks() - frameID;
-        printf("%d\n", frameDelta);
         if (frameDelta < fpsMs) SDL_Delay(fpsMs - frameDelta);
     }
-    shut(&mWindow);
+    shut();
 
     return 0;
 }
 
-bool init(SDL_Window ** window) {
+bool init() {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO) < 0) {
         printf("SDL não pôde ser inicializado! Erro: %s\n", SDL_GetError());
         return false;
     }
 
-    if (!renderInit(window)) return false; 
+    if (!renderInit()) return false; 
     if (!audioInit()) return false;
 
     inputInit();
@@ -73,9 +67,9 @@ bool init(SDL_Window ** window) {
     return true;
 }
 
-void shut(SDL_Window ** window) {
+void shut() {
     inputShut();
-    renderShut(window);
+    renderShut();
     audioShut();
     SDL_Quit();
 }

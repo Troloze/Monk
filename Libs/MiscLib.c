@@ -1,12 +1,33 @@
 #include "MiscLib.h"
 
-/**
- * \brief Função que retorna o valor absoluto de um double.
- * 
- * \param v Valor double cujo valor absoluto será extraído.
- * 
- * \return Valor absoluto do parâmetro v. 
- */
 double dAbs(double v) {
     return (v > 0)? v : -v;
+}
+
+unsigned char convertValueToByte(unsigned char bytePos, unsigned char size, unsigned char value, unsigned char byte) {
+    unsigned char mask = 0b11111111, aux = value;
+    for (int i = 0; i < 8 - size; i++) mask >>= 1;
+
+    for (int i = 0; i < bytePos; i++) { // Colocando o valor e a máscara na posição desejada.
+        value <<= 1;
+        mask <<= 1;
+    }
+
+    mask ^= 0b11111111; // Invertendo a máscara (e.g. antes -> 0b00110000; depois -> 0b11001111)
+
+    byte &= mask; // Limpando os bits na posição do novo valor.
+
+    byte |= value; // Colocando o novo valor na posição que acabou de ser limpa.
+
+    return byte;
+}
+
+unsigned char getByteValue(unsigned char bytePos, unsigned char valueLenght, unsigned char byte) {
+    unsigned char mask = 0b11111111;
+
+    for (int i = 0; i < 8 - valueLenght; i++) mask >>= 1;   // Colocando a máscara para pegar somente o que está no espaço do valor e nada mais.
+
+    for (int i = 0; i < bytePos; i++) byte >>= 1;   // Colocando o valor na posição 0;
+
+    return byte & mask; // Removendo a parte desnecessária do valor e retornando.
 }
