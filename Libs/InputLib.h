@@ -109,6 +109,11 @@ inputAxis getAxis(char * name);
 inputTrigger getTrigger(char * name);
 
 /**
+ * \brief Função que retorna o estado do mouse.
+ */
+inputMouse getMouse();
+
+/**
  * \brief Cria um novo eixo a partir de seus parâmetros e o retorna.
  * 
  * \param name Nome do novo eixo.

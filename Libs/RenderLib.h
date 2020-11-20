@@ -5,26 +5,50 @@
 #include <SDL2/SDL.h>
 #include "MiscLib.h"
 
-#define width 1024
-#define height 1024
-#define vWidth 256
-#define vHeight 192
-#define wRatio width/vWidth
-#define hRatio height/vHeight
+#define SPRITE_STATE_SHOWN 0b00001000
+#define SPRITE_STATE_MIRRORED 0b00000100
+#define SPRITE_STATE_ROTATED_90A 0b00000001
+#define SPRITE_STATE_ROTATED_180A 0b00000010
+#define SPRITE_STATE_ROTATED_270A 0b00000011
+#define SPRITE_STATE_ROTATED_90C SPRITE_STATE_ROTATED_270A
+#define SPRITE_STATE_ROTATED_180C SPRITE_STATE_ROTATED_180A
+#define SPRITE_STATE_ROTATED_270C SPRITE_STATE_ROTATED_90A
+
+#define SPRITE_STATE_3h00 0b00000000
+#define SPRITE_STATE_6h15 SPRITE_STATE_ROTATED_90C
+#define SPRITE_STATE_9h30 SPRITE_STATE_ROTATED_180C
+#define SPRITE_STATE_12h45 SPRITE_STATE_ROTATED_270C
+#define SPRITE_STATE_9h00 SPRITE_STATE_MIRRORED | SPRITE_STATE_3h00
+#define SPRITE_STATE_12h15 SPRITE_STATE_MIRRORED | SPRITE_STATE_6h15
+#define SPRITE_STATE_3h30 SPRITE_STATE_MIRRORED | SPRITE_STATE_9h30
+#define SPRITE_STATE_6h45 SPRITE_STATE_MIRRORED | SPRITE_STATE_12h45
 
 #define COLOR1 0x00000000   // Bandeira da cor 1.
 #define COLOR2 0x00FF0000   // Bandeira da cor 2.
 #define COLOR3 0x0000FF00   // Bandeira da cor 3.
 #define COLOR4 0x000000FF   // Bandeira da cor 4
+
 /**
  * \brief Objeto sprite.
  * 
+ * \param localX posição x em relação ao parente.
+ * \param localY posição y em relação ao parente.
+ * \param globalX posição x em relação à tela.
+ * \param globalY posição y em relação à tela.
+ * \param state Como a imagem será apresentada (A mostra, espelhado e girado)
  * \param pixels Informação dos pixels do sprite. (8x8)
- * \param palette Código da paleta.
+ * \param palette ponteiro para a paleta.
+ * \param parent ponteiro para o parente.
  */
 typedef struct renderSprite {
+    Uint16 localX;
+    Uint16 localY;
+    Uint16 globalX;
+    Uint16 globalY;
+    Uint8 state;                    //0bXXXXSFRR XXXX - for future use. S - Shown, f - flipped, rotated
     Uint8 pixels[16];
-    Uint32 palette; 
+    void * palette; 
+    void * parent;
 } renderSprite;
 
 /**
@@ -41,6 +65,8 @@ typedef struct renderPalette {
     Uint32 color3;
     Uint32 color4;
 } renderPalette;
+
+typedef renderSprite * renderLayer;
 
 /**
  * \brief Esta função carrega uma superfície para o programa.
@@ -73,6 +99,61 @@ bool getSpritesFromSheet(int spriteCount, int x, int y, renderSprite * spriteArr
  * \return Valor do pixel. 
  */
 int getColorValue(Uint32 pixel);
+
+/**
+ * \brief Cria um sprite com as propriedades colocadas.
+ * 
+ * \param pixels Imagem do sprite.
+ * \param palette Paletta em que o sprite será desenhado.
+ * \param parent Parente do sprite. Pode ser NULL.
+ * \param x posição x do novo sprite em relação ao parente. Caso o parente seja NULL, será a posição global.
+ * \param y posição y do novo sprite em relação ao parente. Caso o parente seja NULL, será a posição global.
+ * \param state Forma como o sprite será desenhado. Utilize as flags SPRITE_ para isso, para múltiplas use |.
+ * 
+ * \return Um novo sprite.
+ */
+renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, renderSprite * parent, Uint16 x, Uint16 y, Uint8 state);
+
+/**
+ * \brief Uma função de degug, pra printar um sprite no console.
+ * 
+ * \param sprite Sprite a ser printado no console.
+ */
+void IOSpritePrint(renderSprite sprite);
+
+/**
+ * \brief Renderiza os sprites dentro do layer. LEMBRE DE TRANCAR A SUPERFÍCIE ANTES DE USAR!
+ * 
+ * \param layer Layer cujos sprites serão renderizados.
+ */
+void renderCurrentLayer(SDL_Surface * blitSurface, renderLayer layer);
+
+/**
+ * \brief Renderiza o sprite. LEMBRE DE TRANCAR A SUPERFÍCIE ANTES DE USAR!
+ * 
+ * \param sprite Sprite a ser renderizado.
+ */
+void renderCurrentSprite(SDL_Surface * blitSurface,renderSprite sprite);
+
+/**
+ * \brief Coloca um pixel de determinada cor na posição (x, y) da superfície dada.
+ * 
+ * \param blitSurface Superfície que terá o pixel desenhado.
+ * \param x Posição x do pixel.
+ * \param y Posição y do pixel.
+ * \param color Cor do pixel.
+ */
+void renderCurrentPixel(SDL_Surface * blitSurface, Uint16 x, Uint16 y, Uint32 color);
+
+/**
+ * \brief Atualiza todos os sistemas da RenderLib, deve ser chamada uma vez por frame.
+ * 
+ */
+void renderUpdate();
+
+renderSprite getDefaultSprite();
+
+void setDefaultSprite(renderSprite sprite);
 
 /**
  * \brief Função que inicializa os sistemas de imagem e janela do SDL.

@@ -11,18 +11,14 @@ int main(int argc, char ** argv) {
     int FPS = 60;               // Limite de FPS.
     int fpsMs = 1000/FPS;       // Tempo, em milisegundos, que um frame consome.
 
-    SDL_Window * mWindow;       // Ponteiro para a janela principal.
-    SDL_Surface * mSurface;     // Ponteiro para a superfície da janela.
-    SDL_Renderer * mRenderer;   // Ponteiro para o renderizador principal.
-
-    SDL_Texture * mTexture;     // Ponteiro para a textura do display.
-
     init();   // Inicializando todos os sistemas do SDL
 
     Uint8 * keyStates = malloc(sizeof(Uint8) * SDL_NUM_SCANCODES);  // Vetor responsável por armazenar o estado do teclado.
     inputAxis axisArray[Axis_Ammount];                              // Vetor responsável por armazenar os dados de todos os eixos de entrada.
     inputTrigger triggerArray[Trigger_Ammount];                     // Vetor responsável por armazenar os dados de todos os gatilhos de entrada.
     inputMouse mouse;                                               // Variável responsável por armazenar os dados do mouse.
+
+    renderSprite dRS;
 
     createTrigger("Exit", SDL_SCANCODE_ESCAPE);
     createAxis("Horizontal", 64, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LEFT);
@@ -43,9 +39,17 @@ int main(int argc, char ** argv) {
         if (getTrigger("Exit").value == 1) {
             running = false;
         }
+        dRS = getDefaultSprite();
 
+        dRS.globalX = getMouse().x/8;
+        dRS.globalY = getMouse().y/8;
+
+        setDefaultSprite(dRS);    
+
+        renderUpdate();
         
         frameDelta = SDL_GetTicks() - frameID;
+        printf("%d\n", frameDelta);
         if (frameDelta < fpsMs) SDL_Delay(fpsMs - frameDelta);
     }
     shut();

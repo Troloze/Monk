@@ -62,6 +62,10 @@ inputTrigger getTrigger(char * name) {
     }
 }
 
+inputMouse getMouse() {
+    return mouse;
+}
+
 void createAxis(char * name, Uint8 weight, short int posKey, short int negKey) {
     if (name == "NULL") {// O nome do eixo não pode ser "NULL".
         printf("Nome do eixo não pode ser \"NULL\", novo eixo não pôde ser criado.\n");
