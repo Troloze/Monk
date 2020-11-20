@@ -41,10 +41,10 @@
  * \param parent ponteiro para o parente.
  */
 typedef struct renderSprite {
-    Uint16 localX;
-    Uint16 localY;
-    Uint16 globalX;
-    Uint16 globalY;
+    Sint32 localX;
+    Sint32 localY;
+    Sint32 globalX;
+    Sint32 globalY;
     Uint8 state;                    //0bXXXXSFRR XXXX - for future use. S - Shown, f - flipped, rotated
     Uint8 pixels[16];
     void * palette; 
@@ -112,7 +112,7 @@ int getColorValue(Uint32 pixel);
  * 
  * \return Um novo sprite.
  */
-renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, renderSprite * parent, Uint16 x, Uint16 y, Uint8 state);
+renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, renderSprite * parent, Sint32 x, Sint32 y, Uint8 state);
 
 /**
  * \brief Uma função de degug, pra printar um sprite no console.
@@ -122,11 +122,17 @@ renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, renderSprit
 void IOSpritePrint(renderSprite sprite);
 
 /**
+ * 
+ */
+void renderAllLayers(SDL_Surface * blitSurface, renderLayer * layersToRender, Uint16 * layersToRenderSize);
+
+/**
  * \brief Renderiza os sprites dentro do layer. LEMBRE DE TRANCAR A SUPERFÍCIE ANTES DE USAR!
  * 
  * \param layer Layer cujos sprites serão renderizados.
+ * \param currentLayerSize Número de sprites no layer.
  */
-void renderCurrentLayer(SDL_Surface * blitSurface, renderLayer layer);
+void renderCurrentLayer(SDL_Surface * blitSurface, renderLayer layer, Uint16 currentLayerSize);
 
 /**
  * \brief Renderiza o sprite. LEMBRE DE TRANCAR A SUPERFÍCIE ANTES DE USAR!

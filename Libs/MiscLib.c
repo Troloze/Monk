@@ -31,3 +31,13 @@ unsigned char getByteValue(unsigned char bytePos, unsigned char valueLenght, uns
 
     return byte & mask; // Removendo a parte desnecessária do valor e retornando.
 }
+
+bool isOnArea(int x, int y, int x0, int y0, int xf, int yf) {
+    if (isOnInterval(x, x0, xf) && isOnInterval(y, y0, yf)) return true;
+    return false;
+}
+
+bool isOnInterval(int x, int x0, int xf) {
+    if (x < xf && x >= x0) return true;
+    return false;
+}

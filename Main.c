@@ -41,8 +41,8 @@ int main(int argc, char ** argv) {
         }
         dRS = getDefaultSprite();
 
-        dRS.globalX = getMouse().x/8;
-        dRS.globalY = getMouse().y/8;
+        dRS.globalX = getMouse().x/8 - 4;
+        dRS.globalY = getMouse().y/8 - 4;
 
         setDefaultSprite(dRS);    
 

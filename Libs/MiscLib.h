@@ -1,6 +1,11 @@
 #ifndef __MiscLib_Tro
 #define __MiscLib_Tro
 
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
 
 /**
  * \brief Função que retorna o valor absoluto de um double.
@@ -31,5 +36,30 @@ unsigned char convertValueToByte(unsigned char bytePos, unsigned char size, unsi
  * \param byte Byte em que o valor será obtido.
  */
 unsigned char getByteValue(unsigned char bytePos, unsigned char valueLenght, unsigned char byte);
+
+/**
+ * \brief Função que verifica se uma coordenada pertence a uma área.
+ * 
+ * \param x Posição x da coordenada.
+ * \param y Posição y da coordenada.
+ * \param x0 Inicio x da área.
+ * \param y0 Inicio y da área.
+ * \param xf Fim x da área.
+ * \param yf Fim y da área. 
+ * 
+ * \return True caso a coordenada esteja dentro da área, False caso contrário.
+ */
+bool isOnArea(int x, int y, int x0, int y0, int xf, int yf);
+
+/**
+ * \brief Função que verifica se um valor pertence a um intervalo.
+ * 
+ * \param x Posição do valor.
+ * \param x0 Inicio do intervalo.
+ * \param xf Fim do intervalo.
+ * 
+ * \return True caso o valor esteja dentro do intervalo, False caso contrário.
+ */
+bool isOnInterval(int x, int x0, int xf);
 
 #endif
