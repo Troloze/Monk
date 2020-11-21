@@ -25,7 +25,7 @@
  * 
  * \return o valor do byte com o valor na posição desejada.
  */
-#define convertValueToByte(bytePos, size, value, byte) (((byte & ~((255 >> (8 - size)) << bytePos)) | (value << bytePos)))
+#define setByteValue(bytePos, size, value, byte) (((byte & ~((255 >> (8 - size)) << bytePos)) | (value << bytePos)))
 
 /**
  * \brief Função que obtem um valor de um lugar específico de um byte.

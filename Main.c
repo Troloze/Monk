@@ -23,6 +23,7 @@ int main(int argc, char ** argv) {
     createTrigger("Exit", SDL_SCANCODE_ESCAPE);
     createTrigger("Enter", SDL_SCANCODE_RETURN);
     createAxis("Horizontal", 64, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LEFT);
+   
 
     SDL_Event e;    // Variável que vai receber todos os eventos do SDL.
 
@@ -40,21 +41,18 @@ int main(int argc, char ** argv) {
         if (getTrigger("Exit").value == 1) {
             running = false;
         }
-        
+
         if (getTrigger("Enter").value == 1) {
             clearLayer(1);
         }
 
         dRS = getDefaultSprite();
+        void * palette = dRS.palette;
         if (getMouse().leftButtonState == 0) dRS = getCoreSprites()[CORE_SPRITE_CURSOR_1];
         else dRS = getCoreSprites()[CORE_SPRITE_CURSOR_2];
 
-        if (getMouse().leftButtonState == 2) {
-            renderSprite newSprite = createSprite(getCoreSprites()[CORE_SPRITE_SMILE].pixels, NULL, NULL, getMouse().x/4 - 4,getMouse().y/4 - 4, SPRITE_STATE_SHOWN);
-            addSpriteToLayer(newSprite, 1);
-        }
-
         dRS.globalX = getMouse().x/4;
+        dRS.palette = palette;
         dRS.globalY = getMouse().y/4;
         dRS.state = SPRITE_STATE_SHOWN;
         

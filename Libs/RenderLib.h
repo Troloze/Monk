@@ -1,19 +1,20 @@
 #ifndef __RenderLib_Tro
 #define __RenderLib_Tro
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 #include "MiscLib.h"
 #include "RLCSDef.h"
 
-#define SPRITE_STATE_SHOWN 0b00001000
-#define SPRITE_STATE_MIRRORED 0b00000100
-#define SPRITE_STATE_ROTATED_90A 0b00000001
-#define SPRITE_STATE_ROTATED_180A 0b00000010
-#define SPRITE_STATE_ROTATED_270A 0b00000011
-#define SPRITE_STATE_ROTATED_90C SPRITE_STATE_ROTATED_270A
-#define SPRITE_STATE_ROTATED_180C SPRITE_STATE_ROTATED_180A
-#define SPRITE_STATE_ROTATED_270C SPRITE_STATE_ROTATED_90A
+#define SPRITE_STATE_SHOWN 0b00001000                                       // Bandeira que quando habilitada, faz com que o sprite seja renderizado.
+#define SPRITE_STATE_MIRRORED 0b00000100                                    // Bandeira que quando habilitada, renderiza o sprite espelhado.
+#define SPRITE_STATE_ROTATED_90A 0b00000001                                 // Bandeira que quando habilitada, renderiza o sprite rotacionado em 90 graus no sentido anti-horário.
+#define SPRITE_STATE_ROTATED_180A 0b00000010                                // Bandeira que quando habilitada, renderiza o sprite rotacionado em 180 graus no sentido anti-horário.                               
+#define SPRITE_STATE_ROTATED_270A 0b00000011                                // Bandeira que quando habilitada, renderiza o sprite rotacionado em 270 graus no sentido anti-horário.
+#define SPRITE_STATE_ROTATED_90C SPRITE_STATE_ROTATED_270A                  // Bandeira que quando habilitada, renderiza o sprite rotacionado em 90 graus no sentido horário.
+#define SPRITE_STATE_ROTATED_180C SPRITE_STATE_ROTATED_180A                 // Bandeira que quando habilitada, renderiza o sprite rotacionado em 180 graus no sentido horário.
+#define SPRITE_STATE_ROTATED_270C SPRITE_STATE_ROTATED_90A                  // Bandeira que quando habilitada, renderiza o sprite rotacionado em 270 graus no sentido horário.
 
 #define SPRITE_STATE_3h00 0b00000000
 #define SPRITE_STATE_6h15 SPRITE_STATE_ROTATED_90C
@@ -115,8 +116,19 @@ int getColorValue(Uint32 pixel);
  */
 renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, renderSprite * parent, Sint32 x, Sint32 y, Uint8 state);
 
-renderSprite addSpriteToLayer(renderSprite sprite, Uint8 targetLayer);
+/**
+ * \brief Adiciona um sprite ao layer de número dado.
+ * 
+ * \param sprite Novo sprite a ser adicionado.
+ * \param targetLayer Número do layer em que o sprite novo será adicionado.
+ */
+void addSpriteToLayer(renderSprite sprite, Uint8 targetLayer);
 
+/**
+ * \brief Limpa um layer, apagando todos os seus sprites.
+ * 
+ * \param targetLayer Número do layer que será limpo.
+ */
 void clearLayer(Uint8 targetLayer);
 
 /**
@@ -162,10 +174,25 @@ void renderCurrentSprite(SDL_Surface * blitSurface,renderSprite sprite);
  */
 void renderUpdate();
 
+/**
+ * \brief Função getter do defaultSprite.
+ * 
+ * \return uma cópia do defaultSprite.
+ */
 renderSprite getDefaultSprite();
 
+/**
+ * \brief Função getter do layer Core. 
+ * 
+ * \return Layer Core. 
+ */
 renderSprite * getCoreSprites();
 
+/**
+ * \brief Função setter do defaultSprite.
+ * 
+ * \param sprite Irá substituir o defaultSprite atual.
+ */ 
 void setDefaultSprite(renderSprite sprite);
 
 /**
