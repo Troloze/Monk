@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 #include "MiscLib.h"
+#include "RLCSDef.h"
 
 #define SPRITE_STATE_SHOWN 0b00001000
 #define SPRITE_STATE_MIRRORED 0b00000100
@@ -18,10 +19,10 @@
 #define SPRITE_STATE_6h15 SPRITE_STATE_ROTATED_90C
 #define SPRITE_STATE_9h30 SPRITE_STATE_ROTATED_180C
 #define SPRITE_STATE_12h45 SPRITE_STATE_ROTATED_270C
-#define SPRITE_STATE_9h00 SPRITE_STATE_MIRRORED | SPRITE_STATE_3h00
-#define SPRITE_STATE_12h15 SPRITE_STATE_MIRRORED | SPRITE_STATE_6h15
-#define SPRITE_STATE_3h30 SPRITE_STATE_MIRRORED | SPRITE_STATE_9h30
-#define SPRITE_STATE_6h45 SPRITE_STATE_MIRRORED | SPRITE_STATE_12h45
+#define SPRITE_STATE_9h00 (SPRITE_STATE_MIRRORED | SPRITE_STATE_3h00)
+#define SPRITE_STATE_12h15 (SPRITE_STATE_MIRRORED | SPRITE_STATE_6h15)
+#define SPRITE_STATE_3h30 (SPRITE_STATE_MIRRORED | SPRITE_STATE_9h30)
+#define SPRITE_STATE_6h45 (SPRITE_STATE_MIRRORED | SPRITE_STATE_12h45)
 
 #define COLOR1 0x00000000   // Bandeira da cor 1.
 #define COLOR2 0x00FF0000   // Bandeira da cor 2.
@@ -41,14 +42,14 @@
  * \param parent ponteiro para o parente.
  */
 typedef struct renderSprite {
-    Sint32 localX;
-    Sint32 localY;
-    Sint32 globalX;
-    Sint32 globalY;
-    Uint8 state;                    //0bXXXXSFRR XXXX - for future use. S - Shown, f - flipped, rotated
-    Uint8 pixels[16];
-    void * palette; 
-    void * parent;
+    Sint32 localX;              // Posição X em relação ao parente.
+    Sint32 localY;              // Posição Y em relação ao parente.
+    Sint32 globalX;             // Posição X em relação ao Zero Absoluto.
+    Sint32 globalY;             // Posição X em relação ao Zero Absoluto.
+    Uint8 state;                // Estado do sprite: 0bXXXXSFRR X - Para uso futuro, S - Visivel, F - Espelhado, R - Rotacionado.
+    Uint8 pixels[16];           // Parte visivel do sprite.
+    void * palette;             // Ponteiro para a paleta a ser usada na hora de renderizar o sprite.
+    void * parent;              // Pointeiro para o objeto parente.
 } renderSprite;
 
 /**
@@ -114,6 +115,10 @@ int getColorValue(Uint32 pixel);
  */
 renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, renderSprite * parent, Sint32 x, Sint32 y, Uint8 state);
 
+renderSprite addSpriteToLayer(renderSprite sprite, Uint8 targetLayer);
+
+void clearLayer(Uint8 targetLayer);
+
 /**
  * \brief Uma função de degug, pra printar um sprite no console.
  * 
@@ -149,7 +154,7 @@ void renderCurrentSprite(SDL_Surface * blitSurface,renderSprite sprite);
  * \param y Posição y do pixel.
  * \param color Cor do pixel.
  */
-void renderCurrentPixel(SDL_Surface * blitSurface, Uint16 x, Uint16 y, Uint32 color);
+#define renderCurrentPixel(blitSurface,  x,  y, color) *(Uint32*)((Uint8*) blitSurface->pixels + y * blitSurface->pitch + x * 4) = color
 
 /**
  * \brief Atualiza todos os sistemas da RenderLib, deve ser chamada uma vez por frame.
@@ -158,6 +163,8 @@ void renderCurrentPixel(SDL_Surface * blitSurface, Uint16 x, Uint16 y, Uint32 co
 void renderUpdate();
 
 renderSprite getDefaultSprite();
+
+renderSprite * getCoreSprites();
 
 void setDefaultSprite(renderSprite sprite);
 

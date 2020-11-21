@@ -12,6 +12,7 @@ static Uint16 layerSize[30];
 static renderSprite defaultRenderSprite;
 static SDL_Rect renderRect;
 static renderPalette defaultPalette;
+static renderPalette allPalettes[100];
 static renderSprite core[256];
 
 SDL_Surface * loadSurface(char * path) {
@@ -82,11 +83,26 @@ renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, renderSprit
     if (!(parent == NULL)) {
         newSprite.globalX = parent->globalX + x;
         newSprite.globalY = parent->globalY + y;
+    } else {
+        newSprite.globalX = x;
+        newSprite.globalY = y;
     }
 
     newSprite.state = state;
 
     return newSprite;
+}
+
+renderSprite addSpriteToLayer(renderSprite sprite, Uint8 targetLayer) {
+    layers[targetLayer] = (renderSprite *)realloc(layers[targetLayer],sizeof(renderSprite) * (layerSize[targetLayer] + 1));
+    layers[targetLayer][layerSize[targetLayer]] = sprite;
+    layerSize[targetLayer]++;
+}
+
+void clearLayer(Uint8 targetLayer) {
+    free(layers[targetLayer]);
+    layerSize[targetLayer] = 0;
+    layers[targetLayer] = malloc(0);
 }
 
 int getColorValue(Uint32 pixel) {
@@ -97,54 +113,68 @@ int getColorValue(Uint32 pixel) {
 }
 
 void renderAllLayers(SDL_Surface * blitSurface, renderLayer * layersToRender, Uint16 * layersToRenderSize) {
-    int n;
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 30; i++) {      // Renderizar todos os layers.
         renderCurrentLayer(blitSurface, layersToRender[i], layersToRenderSize[i]);
     }
 }
 
 void renderCurrentLayer(SDL_Surface * blitSurface, renderLayer layer, Uint16 currentLayerSize) {
-    int n = currentLayerSize;
-    if (n == 0) return;
+    if (currentLayerSize == 0) return;  // Caso não haja nenhum sprite no renderizador, pare a função.
 
-    for (int i = 0; i < n; i++) {
-        if (isOnArea(layer[i].globalX, layer[i].globalY, -7, -7, virtualWidth, virtualHeight))
-        renderCurrentSprite(blitSurface, layer[i]);
+    for (int i = 0; i < currentLayerSize; i++) {    // Para cada sprite presente no Layer.
+        if (isOnArea(layer[i].globalX, layer[i].globalY, -7, -7, virtualWidth, virtualHeight))  // Se o sprite estiver presente na área de renderização.
+        renderCurrentSprite(blitSurface, layer[i]); // Renderiza sprite.
     }
 }
 
 void renderCurrentSprite(SDL_Surface * blitSurface,renderSprite sprite) {
-    if (isOnArea(sprite.globalX, sprite.globalY, -7, -7, virtualWidth, virtualHeight)) {
-        Uint8 pixels[16];
-        Uint8 pc, v;
-        Sint32 printX, printY;
-        renderPalette * palette = (renderPalette*)sprite.palette;
-        Uint32 color[4];
+    if (! isOnArea(sprite.globalX, sprite.globalY, -7, -7, virtualWidth, virtualHeight)) return;    // Se o sprite não estiver na área de renderização, parar a função.
 
-        color[0] = palette->color1;
-        color[1] = palette->color2;
-        color[2] = palette->color3;
-        color[3] = palette->color4;
+    if (!((sprite.state >> 3) & 1)) return;   // Se o sprite estiver desabilitado não mostrar.
 
-        if (!(sprite.state & SPRITE_STATE_SHOWN)) return;
-        
-        for (int i = 0; i < 16; i++) pixels[i] = sprite.pixels[i];
-    
-        pc = 0;
-        for (int y = 0; y < 8; y++) for (int x = 0; x < 8; x++) {
+    Sint32 printX, printY;
+    Uint8 v;
+    renderPalette * palette = (renderPalette*)sprite.palette;   // Pegando a paleta do sprite.
+    Uint32 color[4];
+
+    color[0] = palette->color1;     // Pegando as cores da paleta.
+    color[1] = palette->color2;
+    color[2] = palette->color3;
+    color[3] = palette->color4;
+
+    for (int y = 0; y < 8; y++) for (int x = 0; x < 8; x++) {   // Para cada pixel no sprite.
+        // Colocando imprimindo a simetria correta do sprite.
+        if ((sprite.state & 7) == SPRITE_STATE_3h00) {               // 3h00
             printX = sprite.globalX + x;
             printY = sprite.globalY + y;
-            if (isOnArea(printX, printY, 0, 0, virtualWidth, virtualHeight)) {
-                v = getByteValue((x%4) * 2, 2, pixels[(y * 2) + x/4]);
-                if (color[v] & 0xFF000000) renderCurrentPixel(blitSurface, printX, printY, color[v]);   // Se o pixel não for transparente printar.
-            }
+        } else if ((sprite.state & 7) == SPRITE_STATE_6h15) {        // 6h15
+            printX = sprite.globalX + 7 - y;
+            printY = sprite.globalY + x;
+        } else if ((sprite.state & 7) == SPRITE_STATE_9h30) {        // 9h30
+            printX = sprite.globalX + 7 - x;
+            printY = sprite.globalY + 7 - y;
+        } else if ((sprite.state & 7) == SPRITE_STATE_12h45) {        // 12h45
+            printX = sprite.globalX + y;
+            printY = sprite.globalY + 7 - x;
+        } else if ((sprite.state & 7) == SPRITE_STATE_9h00) {        // 9h00
+            printX = sprite.globalX + 7 - x;
+            printY = sprite.globalY + y;
+        } else if ((sprite.state & 7) == SPRITE_STATE_12h15) {        // 12h15
+            printX = sprite.globalX + y;
+            printY = sprite.globalY + x;
+        } else if ((sprite.state & 7) == SPRITE_STATE_3h30) {        // 3h30
+            printX = sprite.globalX + x;
+            printY = sprite.globalY + 7 - y;
+        } else if ((sprite.state & 7) == SPRITE_STATE_6h45) {        // 6h45
+            printX = sprite.globalX + 7 - y;
+            printY = sprite.globalY + 7 - x;
+        }
+
+        if (isOnArea(printX, printY, 0, 0, virtualWidth, virtualHeight)) {  // Se o pixel estiver na área de renderização, renderize ele.
+            v = getByteValue((x%4) * 2, 2, sprite.pixels[(y * 2) + x/4]);   // Pegar a cor do pixel
+            if (color[v] & 0xFF000000) renderCurrentPixel(blitSurface, printX, printY, color[v]);   // Caso o pixel não seja transparente, printar ele com a cor adequada;
         }
     }
-}
-
-void renderCurrentPixel(SDL_Surface * blitSurface, Uint16 x, Uint16 y, Uint32 color) {
-    Uint8 * target_pixel = (Uint8 *) blitSurface->pixels + y * blitSurface->pitch + x * 4;  // Setando um ponteiro para o pixel desejado
-    * ((Uint32*) target_pixel) = color; // Trocando o pixel desejado.
 }
 
 void IOSpritePrint(renderSprite sprite) {
@@ -187,7 +217,7 @@ void renderUpdate() {
 
     if (SDL_MUSTLOCK(renderSurface)) SDL_LockSurface(renderSurface);
 
-    renderCurrentLayer(renderSurface, layers[0], layerSize[0]);
+    renderAllLayers(renderSurface, layers, layerSize);
     renderCurrentSprite(renderSurface, defaultRenderSprite);
 
     if (SDL_MUSTLOCK(renderSurface)) SDL_UnlockSurface(renderSurface);
@@ -202,6 +232,10 @@ renderSprite getDefaultSprite() {
     return defaultRenderSprite;
 }
 
+renderSprite * getCoreSprites() {
+    return core;
+}
+
 void setDefaultSprite(renderSprite sprite) {
     defaultRenderSprite = sprite;
 }
@@ -209,8 +243,8 @@ void setDefaultSprite(renderSprite sprite) {
 bool renderInit() {
     windowWidth = 1024;
     windowHeight = 1024;
-    virtualWidth = 128;
-    virtualHeight = 128;
+    virtualWidth = 256;
+    virtualHeight = 256;
 
     window = SDL_CreateWindow( // Criar janela.
         "Troloze's Amazing Adventure(TM)",
@@ -228,26 +262,22 @@ bool renderInit() {
     windowSurface = SDL_GetWindowSurface(window);   // Pegar a superfície da janela.
 
     defaultPalette.color1 = 0x00000000; // Colocando os valores da paleta principal
-    defaultPalette.color2 = 0xFF94E344;
-    defaultPalette.color3 = 0xFF46878F;
-    defaultPalette.color4 = 0xFFE2F3E4;
-    bgColor = 0xFF332C50;
+    defaultPalette.color2 = 0xFFFF0000;
+    defaultPalette.color3 = 0xFF00FF00;
+    defaultPalette.color4 = 0xFF0000FF;
+    bgColor = 0xFF000000;
 
-    getSpritesFromSheet(87, 16, 16, core, "Sprites/MainSheet.bmp");
+    getSpritesFromSheet(CORE_SPRITE_LIMIT, 16, 16, core, "Sprites/MainSheet.bmp");
 
-    defaultRenderSprite = core[0];
-    defaultRenderSprite.globalX = 60;
-    defaultRenderSprite.globalY = 60;
-    defaultRenderSprite.state = SPRITE_STATE_SHOWN;
+    allPalettes[0].color2 = 0xFF00FFFF;
 
-    layers[0] = malloc(sizeof(renderSprite) * 8000);
-    layerSize[0] = 8000;
-
-    for (int i = 0; i < 8000; i++) {
-        layers[0][i] = defaultRenderSprite;
+    for (int i = 0; i < 30; i++) {
+        layers[i] = malloc(0);
+        layerSize[i] = 0;
     }
-
-    defaultRenderSprite = core[77];
+   
+    defaultRenderSprite = core[CORE_SPRITE_CURSOR_1];
+    defaultRenderSprite.state = SPRITE_STATE_SHOWN;
     defaultRenderSprite.globalX = 60;
     defaultRenderSprite.globalY = 60;
 
