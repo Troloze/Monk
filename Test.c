@@ -13,8 +13,12 @@ int main() {
     a[2] = 3;
     a[3] = 4;
 
-    a = realloc(a, 5);
+    a = realloc(a, 7);
     a[4] = 5;
+    a[5] = 6;
+    a[6] = 7;
+    a[4] = a[6];
+    a = realloc(a, 5);
 
     for (int i = 0; i < 5; i++) printf("%d ", a[i]);
 

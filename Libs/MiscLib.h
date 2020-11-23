@@ -7,7 +7,7 @@
 #include <math.h>
 
 /**
- * \brief Função que retorna o valor absoluto de um double.
+ * \brief Macro que faz o valor absoluto de um valor v.
  * 
  * \param v Valor double cujo valor absoluto será extraído.
  * 
@@ -16,7 +16,7 @@
 #define dAbs(v) ((v > 0)? v : -v)
 
 /**
- * \brief Função que adiciona um valor em um lugar específico de um byte.
+ * \brief Macro que adiciona um valor em um lugar específico de um byte.
  * 
  * \param bytePos Posição que o valor novo será colocado.
  * \param size Tamanho do valor a ser adicionado.
@@ -28,7 +28,7 @@
 #define setByteValue(bytePos, size, value, byte) (((byte & ~((255 >> (8 - size)) << bytePos)) | (value << bytePos)))
 
 /**
- * \brief Função que obtem um valor de um lugar específico de um byte.
+ * \brief Macro que obtem um valor de um lugar específico de um byte.
  * 
  * \param bytePos posição do valor a ser obtido.
  * \param valueLenght tamanho do valor a ser obtido.
@@ -37,7 +37,7 @@
 #define getByteValue(bytePos, valueLenght, byte) ((byte >> bytePos) & (255 >> (8 - valueLenght)))
 
 /**
- * \brief Função que verifica se um valor pertence a um intervalo.
+ * \brief Macro que verifica se um valor pertence a um intervalo.
  * 
  * \param x Posição do valor.
  * \param x0 Inicio do intervalo.
@@ -48,7 +48,7 @@
 #define isOnInterval( x, x0, xf) ((x < xf && x >= x0) ? true : false)
 
 /**
- * \brief Função que verifica se uma coordenada pertence a uma área.
+ * \brief Macro que verifica se uma coordenada pertence a uma área.
  * 
  * \param x Posição x da coordenada.
  * \param y Posição y da coordenada.
