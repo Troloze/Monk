@@ -6,22 +6,19 @@
 
 #undef main
 
+struct a {
+    int inteiro;
+    int * vetor;
+};
+
 int main() {
-    int * a = malloc(sizeof(int) * 4);
-    a[0] = 1;
-    a[1] = 2;
-    a[2] = 3;
-    a[3] = 4;
-
-    a = realloc(a, 7);
-    a[4] = 5;
-    a[5] = 6;
-    a[6] = 7;
-    a[4] = a[6];
-    a = realloc(a, 5);
-
-    for (int i = 0; i < 5; i++) printf("%d ", a[i]);
-
+    struct a b;
+    b.vetor = malloc(sizeof(int));
+    printf("%d ", b.vetor);
+    free(b.vetor);
+    b.vetor = NULL;
+    printf("%d ", b.vetor);
+     
 
     /*
     SDL_Init(SDL_INIT_EVERYTHING);

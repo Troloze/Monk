@@ -10,6 +10,7 @@
 #include "InputLib.h"
 #include "RenderLib.h"
 #include "AudioLib.h"
+#include "Core.h"
 
 bool init();
 void shut();

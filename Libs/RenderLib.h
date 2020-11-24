@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 #include "MiscLib.h"
 #include "RLCSDef.h"
+#include "Core.h"
 
 #define SPRITE_STATE_SHOWN 0b00001000                                       // Bandeira que quando habilitada, faz com que o sprite seja renderizado.
 #define SPRITE_STATE_MIRRORED 0b00000100                                    // Bandeira que quando habilitada, renderiza o sprite espelhado.
@@ -25,33 +26,42 @@
 #define SPRITE_STATE_3h30 (SPRITE_STATE_MIRRORED | SPRITE_STATE_9h30)
 #define SPRITE_STATE_6h45 (SPRITE_STATE_MIRRORED | SPRITE_STATE_12h45)
 
+
+
 #define COLOR1 0x00000000   // Bandeira da cor 1.
 #define COLOR2 0x00FF0000   // Bandeira da cor 2.
 #define COLOR3 0x0000FF00   // Bandeira da cor 3.
 #define COLOR4 0x000000FF   // Bandeira da cor 4
 
+
+
 /**
  * \brief Objeto sprite.
  * 
- * \param localX posição x em relação ao parente.
- * \param localY posição y em relação ao parente.
- * \param globalX posição x em relação à tela.
- * \param globalY posição y em relação à tela.
+ * \param name nome do sprite.
  * \param state Como a imagem será apresentada (A mostra, espelhado e girado)
  * \param pixels Informação dos pixels do sprite. (8x8)
  * \param palette ponteiro para a paleta.
- * \param parent ponteiro para o parente.
+ * \param object objeto do sprite.
  */
 typedef struct renderSprite {
-    Sint32 localX;              // Posição X em relação ao parente.
-    Sint32 localY;              // Posição Y em relação ao parente.
-    Sint32 globalX;             // Posição X em relação ao Zero Absoluto.
-    Sint32 globalY;             // Posição X em relação ao Zero Absoluto.
+    char * name;                // Nome do sprite.
     Uint8 state;                // Estado do sprite: 0bXXXXSFRR X - Para uso futuro, S - Visivel, F - Espelhado, R - Rotacionado.
     Uint8 pixels[16];           // Parte visivel do sprite.
     void * palette;             // Ponteiro para a paleta a ser usada na hora de renderizar o sprite.
-    void * parent;              // Pointeiro para o objeto parente.
+    object * object;        // Objeto renderizador.
 } renderSprite;
+
+/**
+ * \brief Objeto metasprite.
+ * 
+ * \param name nome do metasprite.
+ * \param object objeto do metasprite.
+ */
+typedef struct renderMetasprite {
+    char * name;                // Nome do metasprite.
+    object * object;        // Objeto renderizador.
+} renderMetasprite;
 
 /**
  * \brief Objeto paleta
@@ -67,6 +77,15 @@ typedef struct renderPalette {
     Uint32 color3;
     Uint32 color4;
 } renderPalette;
+
+/**
+ * \brief Objeto câmera.
+ * 
+ * \param object objeto da câmera.
+ */
+typedef struct renderCamera {
+    object * object;
+} renderCamera;
 
 typedef renderSprite * renderLayer;
 
@@ -105,6 +124,7 @@ int getColorValue(Uint32 pixel);
 /**
  * \brief Cria um sprite com as propriedades colocadas.
  * 
+ * \param name Nome do sprite.
  * \param pixels Imagem do sprite.
  * \param palette Paletta em que o sprite será desenhado.
  * \param parent Parente do sprite. Pode ser NULL.
@@ -114,7 +134,9 @@ int getColorValue(Uint32 pixel);
  * 
  * \return Um novo sprite.
  */
-renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, renderSprite * parent, Sint32 x, Sint32 y, Uint8 state);
+renderSprite createSprite(char * name, Uint8 pixels[16], renderPalette * palette, object * parent, Sint32 x, Sint32 y, Uint8 state);
+
+renderMetasprite createMetasprite(char * name, renderSprite * sprites, Sint16 * pos, Sint32 spriteCount, Sint32 metaSizeX, Sint32 metaSizeY, object * parent, Sint32 x, Sint32 y);
 
 /**
  * \brief Adiciona um sprite ao layer de número dado.

@@ -23,7 +23,25 @@ int main(int argc, char ** argv) {
     createTrigger("Exit", SDL_SCANCODE_ESCAPE);
     createTrigger("Enter", SDL_SCANCODE_RETURN);
     createAxis("Horizontal", 64, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LEFT);
-   
+    renderSprite sprites[2];
+    sprites[0] = getCoreSprites()[CORE_SPRITE_L];
+    sprites[1] = getCoreSprites()[CORE_SPRITE_O];
+    Sint16 pos[3];
+    pos[0] = 0;
+    pos[1] = 1;
+    pos[2] = 0;
+
+    object * newObject = createObject(0 , 0);
+
+    object ** toUpdate = malloc(sizeof(object));
+
+    int toUpdateSize = 1;
+
+    toUpdate[0] = newObject;
+
+    renderMetasprite newMeta = createMetasprite("newMeta", sprites, pos, 2, 3, 1, newObject, 0, 0);
+
+    //parentObjects(newObject, newMeta.object, false);
 
     SDL_Event e;    // Variável que vai receber todos os eventos do SDL.
 
@@ -42,23 +60,36 @@ int main(int argc, char ** argv) {
             running = false;
         }
 
-        if (getTrigger("Enter").value == 1) {
-            clearLayer(1);
+        if (getTrigger("Enter").value == 1 && toUpdateSize == 1) { 
+            unparentObject(newMeta.object, true);
+
+            toUpdate = realloc(toUpdate, sizeof(object) * 2);
+            toUpdate[1] = newMeta.object;
+            toUpdateSize++;
         }
 
+        if (getMouse().leftButtonState == 1) {
+
+        }
+
+        newObject->globalX = getMouse().x/4 - 4;
+        newObject->globalY = getMouse().y/4 - 4;
+
+        
         dRS = getDefaultSprite();
         void * palette = dRS.palette;
         if (getMouse().leftButtonState == 0) dRS = getCoreSprites()[CORE_SPRITE_CURSOR_1];
         else dRS = getCoreSprites()[CORE_SPRITE_CURSOR_2];
 
-        dRS.globalX = getMouse().x/4;
+        dRS.object->globalX = getMouse().x/4;
         dRS.palette = palette;
-        dRS.globalY = getMouse().y/4;
+        dRS.object->globalY = getMouse().y/4;
         dRS.state = SPRITE_STATE_SHOWN;
-        
+               
 
-        setDefaultSprite(dRS);    
+        setDefaultSprite(dRS);
 
+        coreUpdate(toUpdate, toUpdateSize);
         renderUpdate();
         
         frameDelta = SDL_GetTicks() - frameID;
