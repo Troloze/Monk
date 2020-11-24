@@ -39,26 +39,52 @@ typedef struct object {
 } object;
 
 /**
+ * \brief Cria um novo objeto.
+ * 
+ * \param x posição X do objeto.
+ * \param y posição y do objeto.
+ * 
+ * \return Ponteiro para o novo objeto.
+ */
+object * createObject(Sint32 x, Sint32 y);
+
+/**
+ * \brief Função que destrói um objeto.
+ * 
+ * \param targetObject objeto que será destruido. 
+ */
+void destroyObject(object * targetObject);
+
+/**
  * \brief Realiza a parentagem entre os objectos
  * 
  * \param parent objeto que será o parente.
  * \param child objeto que será o filiado.
+ * \param keepGlobalPosition caso verdadeiro, altera a posição local do objeto para que ele mantenha sua posição global.
  */
-void parentObjects(object * parent, object * child, bool keepGlobalPosition);
+void parentObject(object * parent, object * child, bool keepGlobalPosition);
 
-
-object * createObject(Sint32 x, Sint32 y);
-
-
-void destroyObject(object * targetObject);
-
-
+/**
+ * \brief Realiza a dessociação do objeto com seu parente.
+ * 
+ * \param child objeto que será deparentado.
+ * \param keepGlobalPosition caso verdadeiro, altera a posição local do objeto para que ele mantenha sua posição global.
+ */
 void unparentObject(object * child, bool keepGlobalPosition);
 
-
+/**
+ * \brief Atualiza todos os objetos dados no argumento.
+ * 
+ * \param targetObjects vetor de objetos que serão atualizados.
+ * \param objectCount número de objetos no vetor.
+ */
 void coreUpdate(object ** targetObjects, Uint32 objectCount);
 
-
+/**
+ * \brief Atualiza a posição de um objeto em específico.
+ * 
+ * \param targetObject objeto que terá a posição atualizada.
+ */
 void updateObjectPosition(object * targetObject);
 
 #endif

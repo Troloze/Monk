@@ -23,7 +23,7 @@ void destroyObject(object * targetObject) {
     targetObject = NULL;                                                                // Setando o ponteiro para null.
 }   
 
-void parentObjects(object * parent, object * child, bool keepGlobalPosition) {
+void parentObject(object * parent, object * child, bool keepGlobalPosition) {
     if (child->parent != NULL) unparentObject(child, keepGlobalPosition ? true : false);                                       // Caso o filial já tenha um parente, realizar a deparentagem.
     
     if (keepGlobalPosition) {

@@ -41,7 +41,7 @@ int main(int argc, char ** argv) {
 
     renderMetasprite newMeta = createMetasprite("newMeta", sprites, pos, 2, 3, 1, newObject, 0, 0);
 
-    //parentObjects(newObject, newMeta.object, false);
+    //parentObject(newObject, newMeta.object, false);
 
     SDL_Event e;    // Variável que vai receber todos os eventos do SDL.
 

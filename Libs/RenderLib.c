@@ -126,7 +126,7 @@ renderMetasprite createMetasprite(char * name, renderSprite * sprites, Sint16 * 
     renderMetasprite newMeta;
     renderSprite newSprite;
     newMeta.object = createObject(x, y);
-    parentObjects(parent, newMeta.object, false);                     // Determinando o parente do metasprite.
+    parentObject(parent, newMeta.object, false);                     // Determinando o parente do metasprite.
 
     if (name == NULL) newMeta.name = malloc(1);
     else {
@@ -144,19 +144,18 @@ renderMetasprite createMetasprite(char * name, renderSprite * sprites, Sint16 * 
 
     for (int ny = 0; ny < metaSizeY; ny++) for (int nx = 0; nx < metaSizeX; nx++) {
         if (pos[ny * metaSizeX + nx] != -1) {
-            for (int i = 0; i < 16; i++) newSprite.pixels[i] = sprites[pos[ny * metaSizeX + nx]].pixels[i];
-            newSprite.palette = sprites[pos[ny * metaSizeX + nx]].palette;
-            newSprite.state = sprites[pos[ny * metaSizeX + nx]].state;
-            newSprite.name = malloc(sizeof(sprites[pos[ny * metaSizeX + nx]].name));
-            newSprite.name = sprites[pos[ny * metaSizeX + nx]].name;
-            newSprite.object = malloc(sizeof(object));
+            for (int i = 0; i < 16; i++) newSprite.pixels[i] = sprites[pos[ny * metaSizeX + nx]].pixels[i]; // Passando a informação dos pixels para o sprite que será impresso.
+            newSprite.palette = sprites[pos[ny * metaSizeX + nx]].palette;                                  // Passando a paleta para o novo sprite.
+            newSprite.state = sprites[pos[ny * metaSizeX + nx]].state;                                      // Passando o estado para o novo sprite.
 
-            newSprite.object->localX = nx * 8;
-            newSprite.object->localY = ny * 8;
+            newSprite.name = malloc(sizeof(sprites[pos[ny * metaSizeX + nx]].name));                        // Passando o nome para o novo sprite.
+            newSprite.name = sprites[pos[ny * metaSizeX + nx]].name;                                        
             
-            parentObjects(newMeta.object, newSprite.object, false);
+            newSprite.object = createObject(nx * 8, ny * 8);                                                // Criando o objeto do novo sprite.
+            
+            parentObject(newMeta.object, newSprite.object, false);                                          // Filiando o novo sprite ao metasprite.
 
-            addSpriteToLayer(newSprite, 0);
+            addSpriteToLayer(newSprite, 0);                                                                 // Adicionando o sprite ao novo layer.
         }
     }
     return newMeta;

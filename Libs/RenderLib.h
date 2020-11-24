@@ -136,6 +136,19 @@ int getColorValue(Uint32 pixel);
  */
 renderSprite createSprite(char * name, Uint8 pixels[16], renderPalette * palette, object * parent, Sint32 x, Sint32 y, Uint8 state);
 
+/**
+ * \brief Função que cria um novo metasprite.
+ * 
+ * \param name Nome do novo metasprite.
+ * \param sprites vetor com os sprites que serão usados no metasprite.
+ * \param pos vetor da construção do metasprite.
+ * \param spriteCount número de sprites no vetor "sprites".
+ * \param metaSizeX tamanho X do metasprite, em sprites. 
+ * \param metaSizeY tamanho Y do metasprite, em sprites.
+ * \param parent Objeto que será associado ao novo metasprite como parente.
+ * \param x posição x local do metasprite.
+ * \param y posição y local do metasprite.
+ */
 renderMetasprite createMetasprite(char * name, renderSprite * sprites, Sint16 * pos, Sint32 spriteCount, Sint32 metaSizeX, Sint32 metaSizeY, object * parent, Sint32 x, Sint32 y);
 
 /**
