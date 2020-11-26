@@ -1,19 +1,23 @@
 #include "Core.h"
 
+static object * root;
+static bool updateSituation;
+
 object * createObject(Sint32 x, Sint32 y) {
-    object * toReturn = malloc(sizeof(object)); // Alocando a memória do novo objeto.
-    toReturn->parent = NULL;                    // O objeto não tem nenhum parente no momento de sua criação.
-    toReturn->parentPos = 0;                    // Por não ter nenhum parente, parentPos é colocado como 0.
+    object * toReturn = (object *) malloc(sizeof(object)); // Alocando a memória do novo objeto.
     toReturn->childrenCount = 0;                // O objeto não tem nenhum filial no momento de sua criação.
     toReturn->children = malloc(0);             // Preparando o vetor children para poder ser realocado no futuro.
     toReturn->localX = x;                       // Setando a posição x do novo objeto.
     toReturn->localY = y;                       // Setando a posição y do novo objeto.
-
+    toReturn->parent = NULL;                    // Deixando o parente como NULL para poder realizar a parentagem com o root.
+    parentObject(root, toReturn, false);        // Colocando a root como parente.
+    toReturn->isUpdated = !updateSituation;     // Setando a situação de update.
+    
     return toReturn;                            // Retornando o objeto.
 }
 
 void destroyObject(object * targetObject) {
-    unparentObject(targetObject, false);                                                       // Desassociando 
+    unparentObject(targetObject, false);                                                // Desassociando sprite ao parente.
 
     while (targetObject->childrenCount > 0) destroyObject(targetObject->children[0]);   // Destruindo todos os objetos filiais a este.
 
@@ -66,19 +70,47 @@ void unparentObject(object * child, bool keepGlobalPosition) {
     child->parentPos = 0;
 }
 
-void coreUpdate(object ** targetObjects, Uint32 objectCount) {
-    for (int i = 0; i < objectCount; i++) {
-        updateObjectPosition((object*)targetObjects[i]);    // Atualizando as posições de todos os objetos.
-    }
+object * getRoot() {
+    return root;
+}
+
+void coreUpdate() {
+    updateObjectPosition(root);
+    updateSituation = !updateSituation;
 }
 
 void updateObjectPosition(object * targetObject) {    
+
+    if(targetObject->isUpdated == updateSituation) return;
+
     if (targetObject->parent != NULL) {
         targetObject->globalX = targetObject->localX + ((object*)targetObject->parent)->globalX;    // Atualizando as posições globais X e Y do objeto.
         targetObject->globalY = targetObject->localY + ((object*)targetObject->parent)->globalY;   
     }
 
+    targetObject->isUpdated = updateSituation;                                                      // Colocando o sprite como atualizado.
+
     for (int i = 0; i < targetObject->childrenCount; i++) {
-        updateObjectPosition((object *)targetObject->children[i]);                              // Atualizando a posição de todas as filiais.
+        updateObjectPosition((object *)targetObject->children[i]);                                  // Atualizando a posição de todas as filiais.
     }
+}
+
+void coreInit() {
+    root = (object *) malloc(sizeof(object));          // Inicializando o objeto raíz e setando seus parâmetros.
+    root->parent = NULL;
+    root->parentPos = 0;
+    root->localX = 0;
+    root->globalX = 0;
+    root->localY = 0;
+    root->globalY = 0;
+    root->childrenCount = 0;
+    root->children = malloc(0);
+    root->isUpdated = true;
+
+    updateSituation = false;                // Deixando a situação de atualização falsa.
+}
+
+void coreShut() {
+    destroyObject(root);
+    root = NULL;
 }

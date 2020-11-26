@@ -13,35 +13,21 @@ int main(int argc, char ** argv) {
 
     init();   // Inicializando todos os sistemas do SDL
 
-    Uint8 * keyStates = malloc(sizeof(Uint8) * SDL_NUM_SCANCODES);  // Vetor responsável por armazenar o estado do teclado.
-    inputAxis axisArray[Axis_Ammount];                              // Vetor responsável por armazenar os dados de todos os eixos de entrada.
-    inputTrigger triggerArray[Trigger_Ammount];                     // Vetor responsável por armazenar os dados de todos os gatilhos de entrada.
-    inputMouse mouse;                                               // Variável responsável por armazenar os dados do mouse.
+    renderSprite * dRS;
 
-    renderSprite dRS;
+    dRS = getDefaultSprite();
 
     createTrigger("Exit", SDL_SCANCODE_ESCAPE);
     createTrigger("Enter", SDL_SCANCODE_RETURN);
-    createAxis("Horizontal", 64, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LEFT);
-    renderSprite sprites[2];
-    sprites[0] = getCoreSprites()[CORE_SPRITE_L];
-    sprites[1] = getCoreSprites()[CORE_SPRITE_O];
-    Sint16 pos[3];
-    pos[0] = 0;
-    pos[1] = 1;
-    pos[2] = 0;
+    createTrigger("Up", SDL_SCANCODE_UP);
+    createTrigger("Down", SDL_SCANCODE_DOWN);
+    createTrigger("Left", SDL_SCANCODE_LEFT);
+    createTrigger("Right", SDL_SCANCODE_RIGHT);
 
-    object * newObject = createObject(0 , 0);
+    createAxis("Horizontal", 255, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LEFT);
+    createAxis("Vertical", 255, SDL_SCANCODE_DOWN, SDL_SCANCODE_UP);
 
-    object ** toUpdate = malloc(sizeof(object));
-
-    int toUpdateSize = 1;
-
-    toUpdate[0] = newObject;
-
-    renderMetasprite newMeta = createMetasprite("newMeta", sprites, pos, 2, 3, 1, newObject, 0, 0);
-
-    //parentObject(newObject, newMeta.object, false);
+    renderCamera * camera = getDefaultCamera();
 
     SDL_Event e;    // Variável que vai receber todos os eventos do SDL.
 
@@ -60,36 +46,25 @@ int main(int argc, char ** argv) {
             running = false;
         }
 
-        if (getTrigger("Enter").value == 1 && toUpdateSize == 1) { 
-            unparentObject(newMeta.object, true);
-
-            toUpdate = realloc(toUpdate, sizeof(object) * 2);
-            toUpdate[1] = newMeta.object;
-            toUpdateSize++;
-        }
+        
+       
+        camera->object->localX += getAxis("Horizontal").value;
+        camera->object->localY += getAxis("Vertical").value;
+        
+        
 
         if (getMouse().leftButtonState == 1) {
 
         }
-
-        newObject->globalX = getMouse().x/4 - 4;
-        newObject->globalY = getMouse().y/4 - 4;
-
         
         dRS = getDefaultSprite();
-        void * palette = dRS.palette;
-        if (getMouse().leftButtonState == 0) dRS = getCoreSprites()[CORE_SPRITE_CURSOR_1];
-        else dRS = getCoreSprites()[CORE_SPRITE_CURSOR_2];
+        void * palette = dRS->palette;
+        if (getMouse().leftButtonState == 0) for (int i = 0; i < 16; i++) dRS->pixels[i] = getCoreSprites()[CORE_SPRITE_CURSOR_1].pixels[i];
+        else for (int i = 0; i < 16; i++) dRS->pixels[i] = getCoreSprites()[CORE_SPRITE_CURSOR_2].pixels[i];
+        dRS->object->localX = getMouse().x/4;
+        dRS->object->localY = getMouse().y/4;
 
-        dRS.object->globalX = getMouse().x/4;
-        dRS.palette = palette;
-        dRS.object->globalY = getMouse().y/4;
-        dRS.state = SPRITE_STATE_SHOWN;
-               
-
-        setDefaultSprite(dRS);
-
-        coreUpdate(toUpdate, toUpdateSize);
+        coreUpdate();
         renderUpdate();
         
         frameDelta = SDL_GetTicks() - frameID;
@@ -109,8 +84,12 @@ bool init() {
 
     SDL_ShowCursor(0);
 
+    coreInit();
+
     if (!renderInit()) return false; 
     if (!audioInit()) return false;
+
+    
 
     inputInit();
 
@@ -121,6 +100,7 @@ void shut() {
     inputShut();
     renderShut();
     audioShut();
+    coreShut();
     SDL_Quit();
 }
 

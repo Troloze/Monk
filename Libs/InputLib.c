@@ -72,7 +72,7 @@ void createAxis(char * name, Uint8 weight, short int posKey, short int negKey) {
     }
 
     inputAxis newAxis;
-    newAxis.name = malloc(sizeof(name));
+    newAxis.name = (char *) malloc(sizeof(name));
     newAxis.name = name;
     newAxis.weight = weight;
     newAxis.posKey = posKey;
@@ -92,7 +92,7 @@ void createTrigger(char * name, short int triggerKey) {
     }
 
     inputTrigger newTrigger;
-    newTrigger.name = malloc (sizeof(name));
+    newTrigger.name = (char *) malloc (sizeof(name));
     newTrigger.name = name;
     newTrigger.value = 0;
     newTrigger.triggerKey = triggerKey;
@@ -203,10 +203,10 @@ void inputUpdate() {
 
 void inputInit() {
     axisCount = 0;
-    axisArray = malloc(0); 
+    axisArray = (inputAxis *) malloc(0); 
 
     triggerCount = 0;
-    triggerArray = malloc(0);
+    triggerArray = (inputTrigger *) malloc(0);
 
     inputInitialized = true;
 }

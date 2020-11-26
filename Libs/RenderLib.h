@@ -45,7 +45,6 @@
  * \param object objeto do sprite.
  */
 typedef struct renderSprite {
-    char * name;                // Nome do sprite.
     Uint8 state;                // Estado do sprite: 0bXXXXSFRR X - Para uso futuro, S - Visivel, F - Espelhado, R - Rotacionado.
     Uint8 pixels[16];           // Parte visivel do sprite.
     void * palette;             // Ponteiro para a paleta a ser usada na hora de renderizar o sprite.
@@ -59,7 +58,6 @@ typedef struct renderSprite {
  * \param object objeto do metasprite.
  */
 typedef struct renderMetasprite {
-    char * name;                // Nome do metasprite.
     object * object;        // Objeto renderizador.
 } renderMetasprite;
 
@@ -119,7 +117,7 @@ bool getSpritesFromSheet(int spriteCount, int x, int y, renderSprite * spriteArr
  * 
  * \return Valor do pixel. 
  */
-int getColorValue(Uint32 pixel);
+#define getColorValue(pixel) (((!(pixel ^ COLOR1)) || (!(pixel ^ COLOR2)) ) ? ((!(pixel ^ COLOR1)) ? 0 : 1) : ((!(pixel ^ COLOR3)) ? 2 : 3))
 
 /**
  * \brief Cria um sprite com as propriedades colocadas.
@@ -134,7 +132,7 @@ int getColorValue(Uint32 pixel);
  * 
  * \return Um novo sprite.
  */
-renderSprite createSprite(char * name, Uint8 pixels[16], renderPalette * palette, object * parent, Sint32 x, Sint32 y, Uint8 state);
+renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, object * parent, Sint32 x, Sint32 y, Uint8 state);
 
 /**
  * \brief Função que cria um novo metasprite.
@@ -149,7 +147,11 @@ renderSprite createSprite(char * name, Uint8 pixels[16], renderPalette * palette
  * \param x posição x local do metasprite.
  * \param y posição y local do metasprite.
  */
-renderMetasprite createMetasprite(char * name, renderSprite * sprites, Sint16 * pos, Sint32 spriteCount, Sint32 metaSizeX, Sint32 metaSizeY, object * parent, Sint32 x, Sint32 y);
+renderMetasprite createMetasprite(renderSprite * sprites, Sint32 * pos, Sint32 spriteCount, Sint32 metaSizeX, Sint32 metaSizeY, object * parent, Sint32 x, Sint32 y);
+
+void changeCamera(renderCamera * newCamera);
+
+renderCamera * getDefaultCamera();
 
 /**
  * \brief Adiciona um sprite ao layer de número dado.
@@ -176,7 +178,7 @@ void IOSpritePrint(renderSprite sprite);
 /**
  * 
  */
-void renderAllLayers(SDL_Surface * blitSurface, renderLayer * layersToRender, Uint16 * layersToRenderSize);
+void renderAllLayers(SDL_Surface * blitSurface, renderLayer * layersToRender, Uint32 * layersToRenderSize);
 
 /**
  * \brief Renderiza os sprites dentro do layer. LEMBRE DE TRANCAR A SUPERFÍCIE ANTES DE USAR!
@@ -184,7 +186,7 @@ void renderAllLayers(SDL_Surface * blitSurface, renderLayer * layersToRender, Ui
  * \param layer Layer cujos sprites serão renderizados.
  * \param currentLayerSize Número de sprites no layer.
  */
-void renderCurrentLayer(SDL_Surface * blitSurface, renderLayer layer, Uint16 currentLayerSize);
+void renderCurrentLayer(SDL_Surface * blitSurface, renderLayer layer, Uint32 currentLayerSize);
 
 /**
  * \brief Renderiza o sprite. LEMBRE DE TRANCAR A SUPERFÍCIE ANTES DE USAR!
@@ -214,7 +216,7 @@ void renderUpdate();
  * 
  * \return uma cópia do defaultSprite.
  */
-renderSprite getDefaultSprite();
+renderSprite * getDefaultSprite();
 
 /**
  * \brief Função getter do layer Core. 
@@ -222,13 +224,6 @@ renderSprite getDefaultSprite();
  * \return Layer Core. 
  */
 renderSprite * getCoreSprites();
-
-/**
- * \brief Função setter do defaultSprite.
- * 
- * \param sprite Irá substituir o defaultSprite atual.
- */ 
-void setDefaultSprite(renderSprite sprite);
 
 /**
  * \brief Função que inicializa os sistemas de imagem e janela do SDL.

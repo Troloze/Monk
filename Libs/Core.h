@@ -1,15 +1,11 @@
 #ifndef __CORE_TRO
 #define __CORE_TRO
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 
-
-#define OBJECT_TYPE_OBJECT 0
-#define OBJECT_TYPE_RENDER_SPRITE 1
-#define OBJECT_TYPE_RENDER_METASPRITE 2
-#define OBJECT_TYPE_RENDER_CAMERA 3
 
 /**
  * \brief Objeto render.
@@ -30,12 +26,13 @@ typedef struct object {
     Sint32 localY;              // Posição Y em relação ao parente.
     Sint32 globalX;             // Posição X em relação ao Zero Absoluto.
     Sint32 globalY;             // Posição X em relação ao Zero Absoluto.
-    Uint16 parentPos;           // Posição do objeto entre os filiais do parente.
+    Uint32 parentPos;           // Posição do objeto entre os filiais do parente.
     void * parent;              // Ponteiro para o objeto parente.
-    Uint16 childrenCount;       // Número de objetos filiados.
+    Uint32 childrenCount;       // Número de objetos filiados.
     void ** children;           // Ponteiros para todos os objetos filiados.
     Uint16 message;             // Mensagem para o item associado ao objeto.
     void * arguments;           // Argumentos da mensagem.
+    bool isUpdated;             // Se o objeto foi atualizado no frame.
 } object;
 
 /**
@@ -47,6 +44,13 @@ typedef struct object {
  * \return Ponteiro para o novo objeto.
  */
 object * createObject(Sint32 x, Sint32 y);
+
+/**
+ * \brief Retorna o ponteiro para root.
+ * 
+ * \return O ponteiro para root.
+ */
+object * getRoot();
 
 /**
  * \brief Função que destrói um objeto.
@@ -78,7 +82,7 @@ void unparentObject(object * child, bool keepGlobalPosition);
  * \param targetObjects vetor de objetos que serão atualizados.
  * \param objectCount número de objetos no vetor.
  */
-void coreUpdate(object ** targetObjects, Uint32 objectCount);
+void coreUpdate();
 
 /**
  * \brief Atualiza a posição de um objeto em específico.
@@ -86,5 +90,15 @@ void coreUpdate(object ** targetObjects, Uint32 objectCount);
  * \param targetObject objeto que terá a posição atualizada.
  */
 void updateObjectPosition(object * targetObject);
+
+/**
+ * \brief Inicializa o sistema de núcleo.
+ */
+void coreInit();
+
+/**
+ * \brief Finaliza os sistemas de núcleo.
+ */
+void coreShut();
 
 #endif
