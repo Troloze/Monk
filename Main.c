@@ -14,26 +14,22 @@ int main(int argc, char ** argv) {
     init();   // Inicializando todos os sistemas do SDL
 
     renderSprite * dRS;
+    renderPalette * newP = createPalette(0x00000000,0xFFD9B76A,0xFF3E3012,0xFFFFFFFF);
+    renderPalette * metaP = createPalette(0x00000000,0xFFD9B76A,0xFF3E3012,0xFFFFFFFF);
+    renderSprite a = createSprite(getCoreSprites()[CORE_SPRITE_UNDEFINED].pixels, NULL, NULL, 0, 0, SPRITE_STATE_SHOWN);
+
+    renderMetasprite newMeta = createMetaspriteFromSheet("Sprites/Logo.bmp", 0, 0, 32, 32, metaP, NULL, 0, 0);
 
     dRS = getDefaultSprite();
 
     createTrigger("Exit", SDL_SCANCODE_ESCAPE);
-    createTrigger("Enter", SDL_SCANCODE_RETURN);
-    createTrigger("Up", SDL_SCANCODE_UP);
-    createTrigger("Down", SDL_SCANCODE_DOWN);
-    createTrigger("Left", SDL_SCANCODE_LEFT);
-    createTrigger("Right", SDL_SCANCODE_RIGHT);
-
-    createAxis("Horizontal", 255, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LEFT);
-    createAxis("Vertical", 255, SDL_SCANCODE_DOWN, SDL_SCANCODE_UP);
-
-    renderCamera * camera = getDefaultCamera();
-
+  
     SDL_Event e;    // Variável que vai receber todos os eventos do SDL.
 
     while (running) {
         frameID = SDL_GetTicks();
 
+        
         while (SDL_PollEvent(&e) != 0){
             if(e.type == SDL_QUIT) {
                 running = false;
@@ -46,29 +42,41 @@ int main(int argc, char ** argv) {
             running = false;
         }
 
-        
-       
-        camera->object->localX += getAxis("Horizontal").value;
-        camera->object->localY += getAxis("Vertical").value;
-        
-        
 
-        if (getMouse().leftButtonState == 1) {
-
+        if (frameID/fpsMs < 64 && Splash) {
+            metaP->color1 = colorMultiplyByValue(newP->color1, (frameID/fpsMs * 4));
+            metaP->color2 = colorMultiplyByValue(newP->color2, (frameID/fpsMs * 4));
+            metaP->color3 = colorMultiplyByValue(newP->color3, (frameID/fpsMs * 4));
+            metaP->color4 = colorMultiplyByValue(newP->color4, (frameID/fpsMs * 4));
+        } else if (frameID/fpsMs <= 64*2 && Splash) {
+            metaP->color1 = newP->color1;
+            metaP->color2 = newP->color2;
+            metaP->color3 = newP->color3;
+            metaP->color4 = newP->color4;
+        } else if (frameID/fpsMs <= 64*3 && Splash) {
+            metaP->color1 = colorMultiplyByValue(newP->color1, 4 * (64 - (frameID/fpsMs % 64)));
+            metaP->color2 = colorMultiplyByValue(newP->color2, 4 * (64 - (frameID/fpsMs % 64)));
+            metaP->color3 = colorMultiplyByValue(newP->color3, 4 * (64 - (frameID/fpsMs % 64)));
+            metaP->color4 = colorMultiplyByValue(newP->color4, 4 * (64 - (frameID/fpsMs % 64)));
+        } else {
+            metaP->color1 = 0xFF;
+            metaP->color2 = 0;
+            metaP->color3 = 0;
+            metaP->color4 = 0;
         }
-        
+
         dRS = getDefaultSprite();
         void * palette = dRS->palette;
         if (getMouse().leftButtonState == 0) for (int i = 0; i < 16; i++) dRS->pixels[i] = getCoreSprites()[CORE_SPRITE_CURSOR_1].pixels[i];
         else for (int i = 0; i < 16; i++) dRS->pixels[i] = getCoreSprites()[CORE_SPRITE_CURSOR_2].pixels[i];
-        dRS->object->localX = getMouse().x/4;
-        dRS->object->localY = getMouse().y/4;
+        dRS->object->localX = (int) (getMouse().x * getWindowRatioX());
+        dRS->object->localY = (int) (getMouse().y * getWindowRatioY());
+        
 
         coreUpdate();
         renderUpdate();
         
         frameDelta = SDL_GetTicks() - frameID;
-        printf("%d\n", frameDelta);
         if (frameDelta < fpsMs) SDL_Delay(fpsMs - frameDelta);
     }
     shut();

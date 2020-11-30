@@ -6,6 +6,11 @@
 #include <stdlib.h>
 #include <math.h>
 
+
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+
 /**
  * \brief Macro que faz o valor absoluto de um valor v.
  * 
@@ -60,6 +65,5 @@
  * \return True caso a coordenada esteja dentro da área, False caso contrário.
  */
 #define isOnArea(x, y, x0, y0, xf, yf) ((isOnInterval(x, x0, xf) && isOnInterval(y, y0, yf)) ? true : false)
-
 
 #endif

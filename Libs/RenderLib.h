@@ -26,14 +26,10 @@
 #define SPRITE_STATE_3h30 (SPRITE_STATE_MIRRORED | SPRITE_STATE_9h30)
 #define SPRITE_STATE_6h45 (SPRITE_STATE_MIRRORED | SPRITE_STATE_12h45)
 
-
-
 #define COLOR1 0x00000000   // Bandeira da cor 1.
 #define COLOR2 0x00FF0000   // Bandeira da cor 2.
 #define COLOR3 0x0000FF00   // Bandeira da cor 3.
 #define COLOR4 0x000000FF   // Bandeira da cor 4
-
-
 
 /**
  * \brief Objeto sprite.
@@ -77,6 +73,21 @@ typedef struct renderPalette {
 } renderPalette;
 
 /**
+ * \brief Objeto estado de janela
+ * 
+ * \param windowHeight Altura da janela, em pixels.
+ * \param windowWidth Largura da janela, em pixels.
+ * \param virtualHeight Altura da simulação, em pixels.
+ * \param virtualWidth Largura da simulação, em pixels.
+ */
+typedef struct renderWindowState {
+    Uint16 windowHeight;    // Altura da janela.
+    Uint16 windowWidth;     // Largura da janela.
+    Uint16 virtualHeight;   // Altura da simulação.
+    Uint16 virtualWidth;    // Largura da simulação.
+} renderWindowState;
+
+/**
  * \brief Objeto câmera.
  * 
  * \param object objeto da câmera.
@@ -86,6 +97,35 @@ typedef struct renderCamera {
 } renderCamera;
 
 typedef renderSprite * renderLayer;
+
+/**
+ * \brief Recebe um pixel e retorna o valor que o bit representa.
+ * 
+ * \param pixel Pixel a ter seu valor determinado.
+ * 
+ * \return Valor do pixel. 
+ */
+#define getColorValue(pixel) (((!(pixel ^ COLOR1)) || (!(pixel ^ COLOR2)) ) ? ((!(pixel ^ COLOR1)) ? 0 : 1) : ((!(pixel ^ COLOR3)) ? 2 : 3))
+
+/**
+ * \brief Coloca um pixel de determinada cor na posição (x, y) da superfície dada.
+ * 
+ * \param blitSurface Superfície que terá o pixel desenhado.
+ * \param x Posição x do pixel.
+ * \param y Posição y do pixel.
+ * \param color Cor do pixel.
+ */
+#define renderCurrentPixel(blitSurface,  x,  y, color) *(Uint32*)((Uint8*) blitSurface->pixels + y * blitSurface->pitch + x * 4) = color
+
+/**
+ * \brief Macro que retorna a razão entre as larguras da simulação e da janela.
+ */
+#define getWindowRatioX() ((double) getWindowState().virtualWidth / getWindowState().windowWidth)
+
+/**
+ * \brief Macro que retorna a razão entre as alturas da simulação e da janela.
+ */
+#define getWindowRatioY() ((double) getWindowState().virtualHeight / getWindowState().windowHeight)
 
 /**
  * \brief Esta função carrega uma superfície para o programa.
@@ -100,24 +140,15 @@ SDL_Surface * loadSurface(char * path);
  * \brief Esta função obtem sprites 8x8 dentro de uma imagem e os guarda em um vetor.
  * 
  * \param spriteCount Quantos sprites você quer que sejam obtidos.
- * \param x Número de colunas de sprites.
- * \param y Número de linhas de sprites.
+ * \param stx Número de colunas de sprites.
+ * \param sty Número de linhas de sprites.
  * \param spriteArray Vetor em que os sprites serão guardados.
  * \param sheetPath Endereço do spritesheet no sistema.
  * 
  * \return True caso a função tenha sido bem sucedida, False caso contrário.
  * 
  */
-bool getSpritesFromSheet(int spriteCount, int x, int y, renderSprite * spriteArray, char * sheetPath);
-
-/**
- * \brief Recebe um pixel e retorna o valor que o bit representa.
- * 
- * \param pixel Pixel a ter seu valor determinado.
- * 
- * \return Valor do pixel. 
- */
-#define getColorValue(pixel) (((!(pixel ^ COLOR1)) || (!(pixel ^ COLOR2)) ) ? ((!(pixel ^ COLOR1)) ? 0 : 1) : ((!(pixel ^ COLOR3)) ? 2 : 3))
+bool getSpritesFromSheet(int spriteCount, int stx, int sty, renderSprite * spriteArray, char * sheetPath);
 
 /**
  * \brief Cria um sprite com as propriedades colocadas.
@@ -149,6 +180,10 @@ renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, object * pa
  */
 renderMetasprite createMetasprite(renderSprite * sprites, Sint32 * pos, Sint32 spriteCount, Sint32 metaSizeX, Sint32 metaSizeY, object * parent, Sint32 x, Sint32 y);
 
+renderMetasprite createMetaspriteFromSheet(char * sheetPath ,Uint16 pathX0, Uint16 pathY0, Uint16 metaWidth, Uint16 metaHeight, renderPalette * palette, object * parent, Sint32 x, Sint32 y);
+
+renderPalette * createPalette(Uint32 color1, Uint32 color2, Uint32 color3, Uint32 color4);
+
 void changeCamera(renderCamera * newCamera);
 
 renderCamera * getDefaultCamera();
@@ -160,6 +195,8 @@ renderCamera * getDefaultCamera();
  * \param targetLayer Número do layer em que o sprite novo será adicionado.
  */
 void addSpriteToLayer(renderSprite sprite, Uint8 targetLayer);
+
+void addRenderLayer();
 
 /**
  * \brief Limpa um layer, apagando todos os seus sprites.
@@ -196,16 +233,6 @@ void renderCurrentLayer(SDL_Surface * blitSurface, renderLayer layer, Uint32 cur
 void renderCurrentSprite(SDL_Surface * blitSurface,renderSprite sprite);
 
 /**
- * \brief Coloca um pixel de determinada cor na posição (x, y) da superfície dada.
- * 
- * \param blitSurface Superfície que terá o pixel desenhado.
- * \param x Posição x do pixel.
- * \param y Posição y do pixel.
- * \param color Cor do pixel.
- */
-#define renderCurrentPixel(blitSurface,  x,  y, color) *(Uint32*)((Uint8*) blitSurface->pixels + y * blitSurface->pitch + x * 4) = color
-
-/**
  * \brief Atualiza todos os sistemas da RenderLib, deve ser chamada uma vez por frame.
  * 
  */
@@ -224,6 +251,13 @@ renderSprite * getDefaultSprite();
  * \return Layer Core. 
  */
 renderSprite * getCoreSprites();
+
+/**
+ * \brief Função que retorna o estado da janela.
+ * 
+ * \return o estado da janela.
+ */
+renderWindowState getWindowState();
 
 /**
  * \brief Função que inicializa os sistemas de imagem e janela do SDL.

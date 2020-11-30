@@ -20,11 +20,13 @@ static renderLayer core;                    // Layer dos sprites principais.
 static renderLayer storage;                 // Layer dos sprites genéricos.
 static Uint32 storageSize;                  // Contagem do número de sprites genéricos.
 
-static renderLayer toRenderLayers[30];      // Layeres de renderização.
-static Uint32 toRenderLayerSize[30];        // Tamanho dos layeres de renderização.
+static renderLayer * toRenderLayers = NULL; // Layeres de renderização.
+static Uint32 * toRenderLayerSize = NULL;   // Tamanho dos layeres para renderização.
+static Uint32 toRenderSize;                 // Tamanho do grupo de layers de renderização.
 
 static renderPalette defaultPalette;        // Paleta genérica.
-static renderPalette allPalettes[100];      // Lista com todas as paletas.
+static renderPalette ** allPalettes;         // Lista com todas as paletas.
+static Uint32 paletteCount;
 
 static Uint8 * printedMask = NULL;          // Máscara de renderização.
 static renderSprite defaultRenderSprite;    // Sprite genérico. (por enquanto é o cursor).
@@ -33,11 +35,8 @@ static SDL_Rect renderRect;                 // Rect com as dimensões da janela.
 SDL_Surface * loadSurface(char * path) {
     SDL_Surface * loadSurface = SDL_LoadBMP(path);   // Superfície que irá carregar a imagem.
     
-    if (loadSurface == NULL) {  // Checando se o carregamento foi bem sucedido.
-        printf("Erro carregando superfície: %s\n", SDL_GetError());
-        return NULL;
-    }
-    
+    if (loadSurface == NULL) printf("Erro carregando superfície: %s\n", SDL_GetError()); // Checando se o carregamento foi bem sucedido.
+        
     return loadSurface;  // Retornando a superfície
 }
 
@@ -46,7 +45,6 @@ bool getSpritesFromSheet(int spriteCount, int stx, int sty, renderSprite * sprit
     if (sheet == NULL) return false;                // Conferindo pra evitar problemas.
 
     renderSprite newSprite;                         // Criando um novo objeto Sprite para ser retornado.
-    newSprite = defaultRenderSprite;
 
     Uint8 newPixels[16];                            // Novo conjunto de pixels q será anexado ao sprite.
     int scount = 0;                                 // Contagem dos Sprites que foram carregados.
@@ -79,6 +77,7 @@ bool getSpritesFromSheet(int spriteCount, int stx, int sty, renderSprite * sprit
         if (spriteCount <= scount) break;
     }
     if (SDL_MUSTLOCK(sheet)) SDL_UnlockSurface(sheet);    // Caso a superfície precise fechar, ela foi fechada anteriormente, e agora será aberta.
+    SDL_FreeSurface(sheet);
     return true;
 }
 
@@ -99,13 +98,20 @@ renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, object * pa
 }
 
 void addSpriteToLayer(renderSprite sprite, Uint8 targetLayer) {
-    if (targetLayer >= 0 && targetLayer < 30) {
+    if (targetLayer >= 0 && targetLayer < toRenderSize) {
         toRenderLayers[targetLayer] = (renderSprite *)realloc(toRenderLayers[targetLayer],sizeof(renderSprite) * (++toRenderLayerSize[targetLayer])); // Realocando o Layer para caber o novo sprite.
         toRenderLayers[targetLayer][toRenderLayerSize[targetLayer] - 1] = sprite;   // Colocando o novo sprite no espaço realocado.
     } else {
         storage = realloc(storage, sizeof(renderSprite) * (++storageSize));
         storage[storageSize - 1] = sprite;
     }
+}
+
+void addRenderLayer() {
+    toRenderLayers = (renderLayer *) realloc(toRenderLayers, sizeof(renderLayer) * ++toRenderSize);
+    toRenderLayerSize = (Uint32 *) realloc(toRenderLayerSize, sizeof(Uint32) * toRenderSize);
+    toRenderLayers[toRenderSize - 1] = (renderSprite *) malloc(0);
+    toRenderLayerSize[toRenderSize - 1] = 0;
 }
 
 renderMetasprite createMetasprite(renderSprite * sprites, Sint32 * pos, Sint32 spriteCount, Sint32 metaSizeX, Sint32 metaSizeY, object * parent, Sint32 x, Sint32 y) {
@@ -138,6 +144,59 @@ renderMetasprite createMetasprite(renderSprite * sprites, Sint32 * pos, Sint32 s
     return newMeta;
 }
 
+renderMetasprite createMetaspriteFromSheet(char * sheetPath, Uint16 pathX0, Uint16 pathY0, Uint16 metaWidth, Uint16 metaHeight, renderPalette * palette, object * parent, Sint32 x, Sint32 y) {
+    renderMetasprite newMeta;                       // Meta que será retornado.
+    newMeta.object = createObject(x, y);
+    if (parent != NULL) parentObject(parent, newMeta.object, false);
+    SDL_Surface * sheet = loadSurface(sheetPath);   // Carregando o spritesheet.
+
+    renderSprite newSprite;                         // Criando um novo objeto Sprite para ser retornado.
+
+    Uint8 newPixels[16];                            // Novo conjunto de pixels q será anexado ao sprite.
+    int index;                                      // Índice do píxel.
+    int cb;                                         // Contagem do bit dentro do sprite.
+    int ci;                                         // Contagem do indice dentro do sprite.
+    int v;                                          // Valor do pixel atual (0, 1, 2 e 3).
+
+    if (SDL_MUSTLOCK(sheet)) SDL_LockSurface(sheet);// Caso seja necessário fechar a superfície para mexer nos píxels, feche.
+   
+    Uint32 * pixels = (Uint32*) sheet->pixels;      // Pegando os dados necessários da superfície
+    int sp = sheet->pitch;
+    int sh = sheet->h;
+    int sw = sheet->w;
+
+    for (int sy = pathY0; sy < metaHeight; sy++) for (int sx = pathX0; sx < metaWidth; sx++) {             // Para todo sprite dentro da spritesheet   
+        for (int y = 0; y < 8; y++) for (int x = 0; x < 8; x++) {                   // Repetir isso para cada pixel do sprite
+            cb = x%4;                                                               // Pegando o bit do pixel do sprite.
+            ci = x/4;                                                               // Pegando o índice do pixel.
+            
+            index = (((sy * 8) + y) * sw) + ((sx * 8) + x);                         // Índice a ser usado no pixel atual.
+            v = getColorValue(pixels[index]);                                       // Pegando o valor do pixel atual.
+
+            index = (y * 2) + ci;                                                   // Índice a ser usado no novo pixel.
+            newPixels[index] = setByteValue(cb * 2, 2, v, newPixels[index]);  // Colocando o valor do novo pixel em seu local.
+        }
+        newSprite = createSprite(newPixels, palette, NULL, sx * 8, sy * 8, SPRITE_STATE_SHOWN);
+        addSpriteToLayer(newSprite, 0);
+        parentObject(newMeta.object, newSprite.object, false);
+    }
+    if (SDL_MUSTLOCK(sheet)) SDL_UnlockSurface(sheet);    // Caso a superfície precise fechar, ela foi fechada anteriormente, e agora será aberta.
+    SDL_FreeSurface(sheet);
+    return newMeta;
+}
+
+renderPalette * createPalette(Uint32 color1, Uint32 color2, Uint32 color3, Uint32 color4) {
+    renderPalette * newP = (renderPalette *) malloc(sizeof(renderPalette));
+    newP->color1 = color1;
+    newP->color2 = color2;
+    newP->color3 = color3;
+    newP->color4 = color4;
+    allPalettes = (renderPalette **) realloc(allPalettes, sizeof(renderPalette *) * ++paletteCount);
+    allPalettes[paletteCount - 1] = (renderPalette *) malloc(sizeof(renderPalette));
+    allPalettes[paletteCount - 1] = newP;
+    return newP;
+}
+
 void changeCamera(renderCamera * newCamera) {
     currentCamera = newCamera;
     parentObject(currentCamera->object, screenObject, false);
@@ -168,8 +227,8 @@ void clearLayer(Uint8 targetLayer) {
 }
 
 void renderAllLayers(SDL_Surface * blitSurface, renderLayer * layersToRender, Uint32 * layersToRenderSize) {
-    for (int i = 0; i < 30; i++) {      // Renderizar todos os toRenderLayers.
-        renderCurrentLayer(blitSurface, layersToRender[29 - i], layersToRenderSize[29 - i]);
+    for (int i = 0; i < toRenderSize; i++) {      // Renderizar todos os toRenderLayers.
+        renderCurrentLayer(blitSurface, layersToRender[toRenderSize - 1 - i], layersToRenderSize[toRenderSize - 1 - i]);
     }
 }
 
@@ -292,6 +351,15 @@ renderSprite * getCoreSprites() {
     return core;
 }
 
+renderWindowState getWindowState() {
+    renderWindowState ret; 
+    ret.windowHeight = windowHeight;
+    ret.windowWidth = windowWidth;
+    ret.virtualHeight = virtualHeight;
+    ret.virtualWidth = virtualWidth;
+    return ret;
+}
+
 bool renderInit() {
     windowWidth = 1024; // Setando os valores da janela, e da janela virtual, respectivamente.
     windowHeight = 1024;
@@ -302,7 +370,15 @@ bool renderInit() {
     defaultCamera.object = createObject(0,0);
     changeCamera(&defaultCamera);
     
-    
+    allPalettes = (renderPalette **) malloc(0);
+    paletteCount = 0;
+
+    toRenderLayers = (renderLayer *) malloc(0);
+    toRenderLayerSize = (Uint32 *) malloc(0);
+    toRenderSize = 0;
+
+    addRenderLayer();
+
     core = (renderSprite *) malloc(sizeof(renderSprite) * 256);  // Alocando o espaço necessário para o layer dos sprites principais.
 
     printedMask = (Uint8 *) malloc(sizeof(Uint8) * (virtualHeight * virtualWidth));   // Alocando o espaço necessário para a máscara de renderização.
@@ -316,7 +392,8 @@ bool renderInit() {
         windowWidth,
         windowHeight,
         SDL_WINDOW_SHOWN
-    );  
+    );
+
     if(window == NULL) {    // Checar se ela foi criada com sucesso.
         printf("Janela não pôde ser criada! Erro: %s\n", SDL_GetError());
         return false;
@@ -333,22 +410,11 @@ bool renderInit() {
 
     getSpritesFromSheet(CORE_SPRITE_LIMIT, 16, 16, core, "Sprites/MainSheet.bmp"); // Colocando todos os sprites principais no layer core.
 
-    allPalettes[0].color1 = 0x00000000;     // Criando uma paletta nova.
-    allPalettes[0].color2 = 0xFFAAAAAA;
-    allPalettes[0].color3 = 0x00000000;
-    allPalettes[0].color4 = 0xFFAAAAAA;
-
-    for (int i = 0; i < 30; i++) {          // Preparando os layeres de renderização.
-        toRenderLayers[i] = (renderLayer) malloc(0);
-        toRenderLayerSize[i] = 0;
-    }
-   
     defaultRenderSprite = core[CORE_SPRITE_CURSOR_1];   // Setando o sprite genérico.
     defaultRenderSprite.state = SPRITE_STATE_SHOWN;
-    defaultRenderSprite.palette = &allPalettes[0];
+    defaultRenderSprite.palette = createPalette(0x00000000, 0xFFAAAAAA, 0x00000000, 0xFFAAAAAA);
     defaultRenderSprite.object = createObject(0, 0);
     parentObject(screenObject, defaultRenderSprite.object, false);
-    addSpriteToLayer(getCoreSprites()[CORE_SPRITE_UNDEFINED], 0);
 
     renderRect.x = 0;   // Colocando os valores do rect usado pra renderizar na janela.
     renderRect.y = 0;
@@ -359,9 +425,18 @@ bool renderInit() {
 }
 
 void renderShut() {
-    for (int i = 0; i < 30; i++) free(toRenderLayers[i]);   // Limpando os layeres de renderização.
+    for (int i = 0; i < toRenderSize; i++) {
+        free(toRenderLayers[i]);   // Limpando os layeres de renderização.
+    }
+    free(toRenderLayers);
+    free(toRenderLayerSize);
 
     free(core); // Limpando os layers.
+    free(storage);
+    for (int i = 0; i < paletteCount; i++) {
+        free(allPalettes[i]);
+    }
+    free(allPalettes); // Limpando as paletas.
 
     free(printedMask);  // Limpando a máscara de renderização.
 

@@ -1,25 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-//#include <SDL2/SDL.h>
+#include <SDL2/SDL.h>
 //#include "Libs/MiscLib.h"
 
 #undef main
 
-struct a {
-    int inteiro;
-    int * vetor;
-};
 
 int main() {
-    struct a b;
-    b.vetor = malloc(sizeof(int));
-    printf("%d ", b.vetor);
-    free(b.vetor);
-    b.vetor = NULL;
-    printf("%d ", b.vetor);
-     
+    Uint32 test = 0xAABBCCDD;
+    Uint8 newT[4] = (Uint8 *) test;
 
+    printf("%d %d %d %d\n", newT[0], newT[1], newT[2], newT[3]);
     /*
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_Window * window = SDL_CreateWindow("Hello", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1024, 1024, SDL_WINDOW_SHOWN);

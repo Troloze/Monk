@@ -1,6 +1,6 @@
 #include "Core.h"
 
-static object * root;
+static object * root = NULL;
 static bool updateSituation;
 
 object * createObject(Sint32 x, Sint32 y) {
