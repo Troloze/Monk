@@ -14,7 +14,7 @@
 #define CORE_SPRITE_K 10
 #define CORE_SPRITE_L 11
 #define CORE_SPRITE_M 12
-#define CORE_SPRITE N 13
+#define CORE_SPRITE_N 13
 #define CORE_SPRITE_O 14
 #define CORE_SPRITE_P 15
 #define CORE_SPRITE_Q 16

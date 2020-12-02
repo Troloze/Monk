@@ -6,10 +6,13 @@
 #include <stdlib.h>
 #include <math.h>
 
-
+#ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
 
+#ifndef min
 #define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
 
 /**
  * \brief Macro que faz o valor absoluto de um valor v.
