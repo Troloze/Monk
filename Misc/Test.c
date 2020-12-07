@@ -1,11 +1,18 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h>
-#include "Libs/MiscLib.h"
+//#include "Libs/MiscLib.h"
 
 #undef main
 
+
 int main() {
+    Uint32 test = 0xAABBCCDD;
+    Uint8 newT[4] = (Uint8 *) test;
+
+    printf("%d %d %d %d\n", newT[0], newT[1], newT[2], newT[3]);
+    /*
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_Window * window = SDL_CreateWindow("Hello", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1024, 1024, SDL_WINDOW_SHOWN);
     SDL_Surface * surface = SDL_GetWindowSurface(window);
@@ -23,7 +30,7 @@ int main() {
     int width = newSurface->w;
     int olPitch = oldSurface->pitch;
     int olWidth = oldSurface->w;
-    printf("The pixel format is: %s\n", SDL_GetPixelFormatName((surface->format->format)));//*/
+    printf("The pixel format is: %s\n", SDL_GetPixelFormatName((surface->format->format)));//*
 
     rect.x = 2;
     rect.y = 2;

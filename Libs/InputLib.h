@@ -1,13 +1,3 @@
-/*
-    Input Library
-
-    Autor: Vitor (Troloze) Di Lorenzzi
-
-    Este software deve ser utilizado somente com autorização do autor.
- */
-
-
-
 #ifndef __InputLib_Tro
 #define __InputLib_Tro
 

@@ -1,12 +1,12 @@
 #include "InputLib.h"
 
-static inputAxis nullAxis;
-static inputTrigger nullTrigger;
-static inputAxis axisArray[Axis_Ammount];
-static inputTrigger triggerArray[Trigger_Ammount];
-static inputMouse mouse;
-static Uint8 keyStates[512];
-static bool inputInitialized = false;
+static int axisCount;                   // Conta quantos elementos existem em axisArray.
+static inputAxis * axisArray;           // Contem todos os eixos.
+static int triggerCount;                // Conta quantos elementos existem em triggerArray.
+static inputTrigger * triggerArray;     // Contem todos os gatilhos.
+static inputMouse mouse;                // Contem a informação do mouse.
+static Uint8 keyStates[512];            // Contem a informação do estado Cru das teclas do teclado.
+static bool inputInitialized = false;   // Indica se a biblioteca foi ou não inicializada.
 
 void createNewKeyStates(){
     Uint8 newKeyStates[SDL_NUM_SCANCODES];  // Vetor que será retornado com todos os estados.
@@ -29,37 +29,34 @@ int updateState(int oldState, bool newState) {
 inputAxis getAxis(char * name) {
     inputAxis getter;
     bool g = false;
-    for (int i = 0; i < Axis_Ammount; i++) {
+    for (int i = 0; i < axisCount; i++) {
         if(axisArray[i].name == name){
             getter = axisArray[i];
             g = true;
             break;
         }
     }
-    if(g){
-        return getter;
-    } else {
+    if(!g){
         printf("Não pode obter eixo. Eixo com nome \"%s\" não encontrado.\n", name);
-        return nullAxis;
     }
+    return getter;
 }
 
 inputTrigger getTrigger(char * name) {
     inputTrigger getter;
     bool g = false;
-    for (int i = 0; i < Trigger_Ammount; i++) {
+    for (int i = 0; i < triggerCount; i++) {
         if(triggerArray[i].name == name) {
             getter = triggerArray[i];
             g = true;
             break;
         }
     }
-    if(g){
-        return getter;
-    } else {
+    if(!g){
         printf("Não pode obter gatilho. Gatilho com nome \"%s\" não encontrado.\n", name);
-        return nullTrigger;
     }
+
+    return getter;
 }
 
 inputMouse getMouse() {
@@ -67,99 +64,80 @@ inputMouse getMouse() {
 }
 
 void createAxis(char * name, Uint8 weight, short int posKey, short int negKey) {
-    if (name == "NULL") {// O nome do eixo não pode ser "NULL".
-        printf("Nome do eixo não pode ser \"NULL\", novo eixo não pôde ser criado.\n");
-        return;
-    }
-   
-    int c = 0;          // Valor do espaço em que o novo eixo será alocado.
-    bool found = false; // Caso um espaço seja encontrado, fica verdadeiro.
-    for (int i = 0; i < Axis_Ammount; i++) {            // Checando por espaços livres no vetor de eixos.
-        if (axisArray[i].name == "NULL") found = true;  // Se houver um espaço livre, a função continua.
-        
-        if (!found) c++;
-
-        if (axisArray[i].name == name) {                // Checando por eixos com o mesmo nome.
-            printf("Eixo com nome \"%s\" já existe, novo eixo não pôde ser criado.", name);
-            return;
-        }
-
-        if (!found && i == Axis_Ammount - 1) {          // Senão, uma mensagem é enviada, e a função para.
-            printf("Número máximo de eixos excedido, novo eixo não pôde ser criado.");
+    for (int i = 0; i < axisCount; i++) {
+        if (axisArray[i].name == name) {
+            printf("Couldn't create new axis. There already exists an axis with the name \"%s\".",name);
             return;
         }
     }
 
     inputAxis newAxis;
-    newAxis.name = malloc(sizeof(name));
+    newAxis.name = (char *) malloc(sizeof(name));
     newAxis.name = name;
     newAxis.weight = weight;
     newAxis.posKey = posKey;
     newAxis.negKey = negKey;
     newAxis.value = 0;
 
-    axisArray[c] = newAxis;
+    axisArray = realloc(axisArray, sizeof(inputAxis) * (++axisCount));
+    axisArray[axisCount - 1] = newAxis;
 }
 
 void createTrigger(char * name, short int triggerKey) {
-    if (name == "NULL") {// O nome do gatilho não pode ser "NULL".
-        printf("Nome do gatilho não pode ser \"NULL\", novo gatilho não pôde ser criado.\n");
-        return;
-    }
-
-    int c = 0;          // Valor do espaço em que o novo gatilho será alocado.
-    bool found = false; // Caso um espaço seja encontrado, fica verdadeiro.
-    for (int i = 0; i < Trigger_Ammount; i++) {             // Checando por espaços livres no vetor de gatilhos.
-        if (triggerArray[i].name == "NULL") found = true;   // Se houver um espaço livre, a função continua.
-        
-        if (!found) c++;
-
-        if (triggerArray[i].name == name) {                 // Checando por gatilhos com o mesmo nome.
-            printf("Gatilho com nome \"%s\" já existe, novo gatilho não pôde ser criado.", name);
-            return;
-        }
-        
-        if (!found && i == Trigger_Ammount - 1) {                     // Senão, uma mensagem é enviada, e a função para.
-            printf("Número máximo de gatilhos excedido, novo gatilho não pôde ser criado.");
+    for (int i = 0; i < triggerCount; i++) {
+        if (triggerArray[i].name == name) {
+            printf("Couldn't create new trigger. There already exists a trigger with the name \"%s\".",name);
             return;
         }
     }
 
     inputTrigger newTrigger;
-    newTrigger.name = malloc (sizeof(name));
+    newTrigger.name = (char *) malloc (sizeof(name));
     newTrigger.name = name;
     newTrigger.value = 0;
     newTrigger.triggerKey = triggerKey;
     
-    triggerArray[c] = newTrigger;
+    triggerArray = realloc(triggerArray, sizeof(inputTrigger) * (++triggerCount));
+    triggerArray[triggerCount - 1] = newTrigger;
 }
 
 void destroyAxis(char * name) {
-    for (int i = 0; i < Axis_Ammount; i++) {
-        if (axisArray[i].name == name) {
-            axisArray[i] = nullAxis;
-            break;
+    bool found = 0;
+    for (int i = 0; i < axisCount; i++) {
+        if (axisArray[i].name != name) {
+            if (found == 1) axisArray[i - 1] = axisArray[i];
+        } 
+        else found = 1;
+        
+        if (i == (axisCount - 1) && found == 0) {
+            printf("Eixo de nome \"%s\" não encontrado e , portanto, não destruído.\n", name);
+            return;
         }
-        if (i == Axis_Ammount - 1) printf("Eixo de nome \"%s\" não encontrado e , portanto, não destruído.\n", name);
     }
+
+    axisArray = realloc(axisArray, sizeof(inputAxis) * (--axisCount));
 }
 
 void destroyTrigger(char * name) {
-    for (int i = 0; i < Trigger_Ammount; i++) {
-        if (triggerArray[i].name == name) {
-            triggerArray[i] = nullTrigger;
-            break;
-        }
-        if (i == Trigger_Ammount - 1) printf("Gatilho de nome \"%s\" não encontrado e , portanto, não destruído.\n", name);
+    bool found = 0;
+    for (int i = 0; i < triggerCount; i++) {
+        if (triggerArray[i].name != name) {
+           if (found == 1) triggerArray[i - 1] = triggerArray[i];
+        } 
+        else found = 1;
+
+        if (i == (triggerCount - 1) && found == 0) printf("Gatilho de nome \"%s\" não encontrado e , portanto, não destruído.\n", name);
     }
+
+    triggerArray = realloc(triggerArray, sizeof(inputTrigger) * (--triggerCount));
 }
 
-void updateAxis() {
+void updateAxis() { 
     Uint8 posKeyState, negKeyState, cWeight;
     double cValue;
     bool isPos, isNeg;
 
-    for(int i = 0; i < Axis_Ammount; i++) if (axisArray[i].name != "NULL"){
+    for(int i = 0; i < axisCount; i++) {
         posKeyState = keyStates[axisArray[i].posKey];   // Estado da tecla positiva do eixo sendo atualizado.
         negKeyState = keyStates[axisArray[i].negKey];   // Estado da tecla negativa do eixo sendo atualizado.
         cWeight = axisArray[i].weight;  // Peso do eixo sendo atualizado.
@@ -189,7 +167,7 @@ void updateAxis() {
 
 void updateTrigger() {
     // Atualizando os valores dos gatilhos.
-    for(int i = 0; i < Trigger_Ammount; i++) if (triggerArray[i].name != "NULL") triggerArray[i].value = keyStates[triggerArray[i].triggerKey];   
+    for(int i = 0; i < triggerCount; i++) triggerArray[i].value = keyStates[triggerArray[i].triggerKey];   
 }
 
 void updateMouse() {
@@ -224,33 +202,30 @@ void inputUpdate() {
 }
 
 void inputInit() {
-    nullAxis.name = malloc(sizeof("NULL"));
-    nullAxis.name = "NULL";
-    nullAxis.negKey = 0;
-    nullAxis.posKey = 0;
-    nullAxis.value = 0;
-    nullAxis.weight = 0;
+    axisCount = 0;
+    axisArray = (inputAxis *) malloc(0); 
 
-    nullTrigger.name = malloc(sizeof("NULL"));
-    nullTrigger.name = "NULL";
-    nullTrigger.triggerKey = 0;
-    nullTrigger.value = 0;
+    triggerCount = 0;
+    triggerArray = (inputTrigger *) malloc(0);
 
-    resetAxis();
-    resetTrigger();
     inputInitialized = true;
 }
 
 void inputShut() {
-    resetAxis();
-    resetTrigger();
+    free(axisArray);
+    free(triggerArray);
+
     inputInitialized = false;
 }
 
 void resetAxis() {
-    for (int i = 0; i < Axis_Ammount; i++) axisArray[i] = nullAxis;             // Anular todos os eixos.
+    free(axisArray);
+    axisCount = 0;
+    axisArray = malloc(0);      
 }
 
 void resetTrigger() {    
-    for (int i = 0; i < Trigger_Ammount; i++) triggerArray[i] = nullTrigger;    // Anular todos os gatilhos.
+    free(triggerArray);
+    triggerCount = 0;
+    triggerArray = malloc(0);
 }
