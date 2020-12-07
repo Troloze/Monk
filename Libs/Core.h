@@ -24,8 +24,10 @@
 typedef struct object {
     Sint32 localX;              // Posição X em relação ao parente.
     Sint32 localY;              // Posição Y em relação ao parente.
-    Sint32 globalX;             // Posição X em relação ao Zero Absoluto.
-    Sint32 globalY;             // Posição X em relação ao Zero Absoluto.
+    double localRot;            // Rotação em relação ao parente.
+    Sint32 globalX;             // Posição X global.
+    Sint32 globalY;             // Posição X global.
+    double globalRot;           // Rotação global
     Uint32 parentPos;           // Posição do objeto entre os filiais do parente.
     void * parent;              // Ponteiro para o objeto parente.
     Uint32 childrenCount;       // Número de objetos filiados.

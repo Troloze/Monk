@@ -4,16 +4,16 @@ static object * root = NULL;
 static bool updateSituation;
 
 object * createObject(Sint32 x, Sint32 y) {
-    object * toReturn = (object *) malloc(sizeof(object)); // Alocando a memória do novo objeto.
-    toReturn->childrenCount = 0;                // O objeto não tem nenhum filial no momento de sua criação.
-    toReturn->children = malloc(0);             // Preparando o vetor children para poder ser realocado no futuro.
-    toReturn->localX = x;                       // Setando a posição x do novo objeto.
-    toReturn->localY = y;                       // Setando a posição y do novo objeto.
-    toReturn->parent = NULL;                    // Deixando o parente como NULL para poder realizar a parentagem com o root.
-    parentObject(root, toReturn, false);        // Colocando a root como parente.
-    toReturn->isUpdated = !updateSituation;     // Setando a situação de update.
+    object * toReturn = (object *) malloc(sizeof(object));  // Alocando a memória do novo objeto.
+    toReturn->childrenCount = 0;                            // O objeto não tem nenhum filial no momento de sua criação.
+    toReturn->children = malloc(0);                         // Preparando o vetor children para poder ser realocado no futuro.
+    toReturn->localX = x;                                   // Setando a posição x do novo objeto.
+    toReturn->localY = y;                                   // Setando a posição y do novo objeto.
+    toReturn->parent = NULL;                                // Deixando o parente como NULL para poder realizar a parentagem com o root.
+    parentObject(root, toReturn, false);                    // Colocando a root como parente.
+    toReturn->isUpdated = !updateSituation;                 // Setando a situação de update.
     
-    return toReturn;                            // Retornando o objeto.
+    return toReturn;                                        // Retornando o objeto.
 }
 
 void destroyObject(object * targetObject) {

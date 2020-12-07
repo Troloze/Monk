@@ -26,10 +26,10 @@
 #define SPRITE_STATE_3h30 (SPRITE_STATE_MIRRORED | SPRITE_STATE_9h30)
 #define SPRITE_STATE_6h45 (SPRITE_STATE_MIRRORED | SPRITE_STATE_12h45)
 
-#define COLOR1 0x00000000   // Bandeira da cor 1.
-#define COLOR2 0x00FF0000   // Bandeira da cor 2.
-#define COLOR3 0x0000FF00   // Bandeira da cor 3.
-#define COLOR4 0x000000FF   // Bandeira da cor 4
+#define COLOR1 0xFF000000   // Bandeira da cor 1.
+#define COLOR2 0xFFFF0000   // Bandeira da cor 2.
+#define COLOR3 0xFF00FF00   // Bandeira da cor 3.
+#define COLOR4 0xFF0000FF   // Bandeira da cor 4
 
 /**
  * \brief Objeto sprite.
@@ -146,9 +146,21 @@ SDL_Surface * loadSurface(char * path);
  * \param sheetPath Endereço do spritesheet no sistema.
  * 
  * \return True caso a função tenha sido bem sucedida, False caso contrário.
- * 
  */
 bool getSpritesFromSheet(int spriteCount, int stx, int sty, renderSprite * spriteArray, char * sheetPath);
+
+/**
+ * \brief Esta função obtem sprites 8x8 dentro de uma imagem, já com suas paletas, e os guarda em um vetor.
+ * 
+ * \param spriteCount Quantos sprites você quer que sejam obtidos.
+ * \param stx Número de colunas de sprites.
+ * \param sty Número de linhas de sprites.
+ * \param spriteArray Vetor em que os sprites serão guardados.
+ * \param sheetPath Endereço do spritesheet no sistema.
+ * 
+ * \return True caso a função tenha sido bem sucedida, False caso contrário.
+ */
+bool getSpritesFromSheetPalette(int spriteCount, int stx, int sty, renderSprite * spriteArray, char * sheetPath);
 
 /**
  * \brief Cria um sprite com as propriedades colocadas.
@@ -180,12 +192,71 @@ renderSprite createSprite(Uint8 pixels[16], renderPalette * palette, object * pa
  */
 renderMetasprite createMetasprite(renderSprite * sprites, Sint32 * pos, Sint32 spriteCount, Sint32 metaSizeX, Sint32 metaSizeY, object * parent, Sint32 x, Sint32 y);
 
+/**
+ * \brief Cria um novo metasprite usando uma sheet.
+ * 
+ * \param sheetPath caminho para o arquivo da sheet.
+ * \param pathX0 Primeiro sprite do metasprite na sheet, em X.
+ * \param pathY0 Primeiro sprite do metasprite na sheet, em Y.
+ * \param metaWidth Número de sprites em X do metasprite.
+ * \param metaHeight Número de sprites em Y do metasprite.
+ * \param palette Ponteiro para paleta global do metasprite.
+ * \param parent Objeto que terá o objeto do metasprite como parente.
+ * \param x Posição local X do metasprite.
+ * \param y Posição local Y do metasprite.
+ * 
+ * \return um metasprite com seus componentes afiliados.
+ */
 renderMetasprite createMetaspriteFromSheet(char * sheetPath ,Uint16 pathX0, Uint16 pathY0, Uint16 metaWidth, Uint16 metaHeight, renderPalette * palette, object * parent, Sint32 x, Sint32 y);
 
+/**
+ * \brief Cria um novo metasprite já colorido usando uma sheet.
+ * 
+ * \param sheetPath caminho para o arquivo da sheet.
+ * \param pathX0 Primeiro sprite do metasprite na sheet, em X.
+ * \param pathY0 Primeiro sprite do metasprite na sheet, em Y.
+ * \param metaWidth Número de sprites em X do metasprite.
+ * \param metaHeight Número de sprites em Y do metasprite.
+ * \param parent Objeto que terá o objeto do metasprite como parente.
+ * \param x Posição local X do metasprite.
+ * \param y Posição local Y do metasprite.
+ * 
+ * \return um metasprite com seus componentes afiliados.
+ */
+renderMetasprite createMetaspriteFromSheetPalette(char * sheetPath, Uint16 pathX0, Uint16 pathY0, Uint16 metaWidth, Uint16 metaHeight, object * parent, Sint32 x, Sint32 y);
+
+/**
+ * \brief Cria uma paleta nova com as cores dadas.
+ * 
+ * \param color1 Cor 1 da paleta.
+ * \param color2 Cor 2 da paleta.
+ * \param color3 Cor 3 da paleta.
+ * \param color4 Cor 4 da paleta.
+ * 
+ * \return O ponteiro para a paleta criada.
+ */
 renderPalette * createPalette(Uint32 color1, Uint32 color2, Uint32 color3, Uint32 color4);
 
+
+/**
+ * \brief Cria uma paleta vazia. 
+ * 
+ * \return O ponteiro para a paleta criada.
+ */
+renderPalette * createEmptyPalette();
+
+/**
+ * \brief Muda a orientação do renderizador para a nova câmera, enquanto mantêm os objetos associados à tela em suas posições normais
+ * 
+ * \param newCamera Ponteiro para a nova câmera de orientação.
+ */
 void changeCamera(renderCamera * newCamera);
 
+/**
+ * \brief Obtem o ponteiro para a câmera básica.
+ * 
+ * \return O ponteiro para a câmera básica.
+ */
 renderCamera * getDefaultCamera();
 
 /**
@@ -196,6 +267,9 @@ renderCamera * getDefaultCamera();
  */
 void addSpriteToLayer(renderSprite sprite, Uint8 targetLayer);
 
+/**
+ * \brief Adiciona um Layer de renderização.
+ */
 void addRenderLayer();
 
 /**
