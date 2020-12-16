@@ -12,6 +12,7 @@
 #include "RenderLib.h"
 #include "AudioLib.h"
 #include "ColorLib.h"
+#include "FileLib.h"
 
 #define Splash true
 

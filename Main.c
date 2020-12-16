@@ -98,7 +98,7 @@ bool init() {
     if (!audioInit()) return false;
 
     
-
+    fileInit();
     inputInit();
 
     return true;
@@ -106,8 +106,9 @@ bool init() {
 
 void shut() {
     inputShut();
-    renderShut();
+    fileShut();
     audioShut();
+    renderShut();
     coreShut();
     SDL_Quit();
 }
