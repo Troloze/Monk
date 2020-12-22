@@ -11,16 +11,23 @@ int main(int argc, char ** argv) {
     int FPS = 60;               // Limite de FPS.
     int fpsMs = 1000/FPS;       // Tempo, em milisegundos, que um frame consome.
 
-    init();   // Inicializando todos os sistemas do SDL
+    if (!init()) return -1;     // Inicializando todos os sistemas do SDL
 
-    renderSprite * dRS;
-    renderPalette * newP = createPalette(0x00000000,0xFFD9B76A,0xFF3E3012,0xFFFFFFFF);
-    renderPalette * metaP = createPalette(0x00000000,0xFFD9B76A,0xFF3E3012,0xFFFFFFFF);
-    renderSprite a = createSprite(getCoreSprites()[CORE_SPRITE_UNDEFINED].pixels, NULL, NULL, 0, 0, SPRITE_STATE_SHOWN);
+    renderSprite * a;
+    renderPalette * p = createPalette(0xFFF33570, 0, 0, 0);
+    object * obj, * mouseObj = createObject(0, 0, OBJ_MASK_OBJ, OBJ_TYPE_OBJECT, mouseObj);
 
-    renderMetasprite newMeta = createMetaspriteFromSheet("Sprites/Logo.bmp", 0, 0, 32, 32, metaP, NULL, 0, 0);
+    for (int i = 0; i < 40000; i++) {
+        a = getCoreSprites()->layer[i%CORE_SPRITE_LIMIT];
+        obj = a->object;
+        parentObject(mouseObj, obj, false);
+        addSpriteToRender(a);
+    }
 
-    dRS = getDefaultSprite();
+    a = createSprite(getCoreSprites()->layer[CORE_SPRITE_BLANK]->pixels, p, obj, 0, 0, SPRITE_STATE_SHOWN, 0);
+    addSpriteToRender(a);
+
+    a = NULL;
 
     createTrigger("Exit", SDL_SCANCODE_ESCAPE);
   
@@ -42,65 +49,71 @@ int main(int argc, char ** argv) {
             running = false;
         }
 
-
-        if (frameID/fpsMs < 64 && Splash) {
-            metaP->color1 = colorMultiplyByValue(newP->color1, (frameID/fpsMs * 4));
-            metaP->color2 = colorMultiplyByValue(newP->color2, (frameID/fpsMs * 4));
-            metaP->color3 = colorMultiplyByValue(newP->color3, (frameID/fpsMs * 4));
-            metaP->color4 = colorMultiplyByValue(newP->color4, (frameID/fpsMs * 4));
-        } else if (frameID/fpsMs <= 64*2 && Splash) {
-            metaP->color1 = newP->color1;
-            metaP->color2 = newP->color2;
-            metaP->color3 = newP->color3;
-            metaP->color4 = newP->color4;
-        } else if (frameID/fpsMs <= 64*3 && Splash) {
-            metaP->color1 = colorMultiplyByValue(newP->color1, 4 * (64 - (frameID/fpsMs % 64)));
-            metaP->color2 = colorMultiplyByValue(newP->color2, 4 * (64 - (frameID/fpsMs % 64)));
-            metaP->color3 = colorMultiplyByValue(newP->color3, 4 * (64 - (frameID/fpsMs % 64)));
-            metaP->color4 = colorMultiplyByValue(newP->color4, 4 * (64 - (frameID/fpsMs % 64)));
-        } else {
-            metaP->color1 = 0xFF;
-            metaP->color2 = 0;
-            metaP->color3 = 0;
-            metaP->color4 = 0;
-        }
-
-        dRS = getDefaultSprite();
-        void * palette = dRS->palette;
-        if (getMouse().leftButtonState == 0) for (int i = 0; i < 16; i++) dRS->pixels[i] = getCoreSprites()[CORE_SPRITE_CURSOR_1].pixels[i];
-        else for (int i = 0; i < 16; i++) dRS->pixels[i] = getCoreSprites()[CORE_SPRITE_CURSOR_2].pixels[i];
-        dRS->object->localX = (int) (getMouse().x * getWindowRatioX());
-        dRS->object->localY = (int) (getMouse().y * getWindowRatioY());
+        mouseObj->localX = getMouse().x * getWindowRatioX();
+        mouseObj->localY = getMouse().y * getWindowRatioY();
         
-
         coreUpdate();
+        audioUpdate();
         renderUpdate();
-        
+        if (!errorUpdate()) running = false;
+
         frameDelta = SDL_GetTicks() - frameID;
+        printf("%d\n", frameDelta);
         if (frameDelta < fpsMs) SDL_Delay(fpsMs - frameDelta);
     }
+    
     shut();
 
     return 0;
 }
 
 bool init() {
+    errorInit();
+
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO) < 0) {
         printf("SDL não pôde ser inicializado! Erro: %s\n", SDL_GetError());
         return false;
     }
 
-    SDL_ShowCursor(0);
+    SDL_ShowCursor(1);
 
-    coreInit();
+    if (!coreInit()) {
+        printf("%s\n", errorGet());
+        SDL_Quit();
+        errorShut();
+        return false;
+    }
 
-    if (!renderInit()) return false; 
-    if (!audioInit()) return false;
-
+    if (!renderInit()) {
+        printf("%s\n", errorGet());
+        coreShut();
+        SDL_Quit();
+        errorShut();
+        return false;
+    }
     
-    fileInit();
-    inputInit();
+    if (!audioInit()) {
+        printf("%s\n", errorGet());
+        renderShut();
+        coreShut();
+        SDL_Quit();
+        errorShut();
+        return false;
+    }
 
+    fileInit();
+
+    if (!inputInit()) {
+        printf("%s\n", errorGet());
+        fileShut();
+        audioShut();
+        renderShut();
+        coreShut();
+        SDL_Quit();
+        errorShut();
+        return false;
+    }
+    
     return true;
 }
 
@@ -111,5 +124,6 @@ void shut() {
     renderShut();
     coreShut();
     SDL_Quit();
+    errorShut();
 }
 

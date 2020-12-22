@@ -201,14 +201,24 @@ void inputUpdate() {
     }
 }
 
-void inputInit() {
+bool inputInit() {
     axisCount = 0;
     axisArray = (inputAxis *) malloc(0); 
+    if (axisArray == NULL) {
+        errorSet("inputInit: Não foi possível alocar o vetor de eixos.");
+        return false;
+    }
 
     triggerCount = 0;
     triggerArray = (inputTrigger *) malloc(0);
+    if (triggerArray == NULL) {
+        errorSet("inputInit: Não foi possível alocar o vetor de gatilhos");
+        free(axisArray);
+        return false;
+    }
 
     inputInitialized = true;
+    return true;
 }
 
 void inputShut() {

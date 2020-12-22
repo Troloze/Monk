@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 #ifndef max
@@ -13,6 +14,10 @@
 #ifndef min
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
+
+#define dabs(v) ((v > 0) ? v : -v)
+
+#define square(v) (v * v)
 
 /**
  * \brief Macro que faz o valor absoluto de um valor v.
@@ -68,5 +73,17 @@
  * \return True caso a coordenada esteja dentro da área, False caso contrário.
  */
 #define isOnArea(x, y, x0, y0, xf, yf) ((isOnInterval(x, x0, xf) && isOnInterval(y, y0, yf)) ? true : false)
+
+#define distanceBetweenTwoPoints(x0, x1, y0, y1) (sqrt(((x1 - x0) * (x1 - x0)) + ((y1 - y0) * (y1 - y0))))
+
+#define dBTP(x0, x1, y0, y1) distanceBetweenTwoPoints(x0, x1, y0, y1)
+
+#define angleBetweenTwoPointsRadians(x0, x1, y0, y1) atan2(y1 - y0,x1 - x0)
+
+#define aBTPR(x0, x1, y0, y1) angleBetweenTwoPointsRadians(x0, x1, y0, y1)
+
+#define angleBetweenTwoPointsDegrees(x0, x1, y0, y1) (aBTPR(x0, x1, y0, y1) * 180.0 / M_PI)
+
+#define aBTPD(x0, x1, y0, y1) angleBetweenTwoPointsDegrees(x0, x1, y0, y1)
 
 #endif

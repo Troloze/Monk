@@ -1,6 +1,8 @@
 #ifndef __Main_Tro
 #define __Main_Tro
 
+#define _USE_MATH_DEFINES
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -13,8 +15,12 @@
 #include "AudioLib.h"
 #include "ColorLib.h"
 #include "FileLib.h"
+#include "ErrorLib.h"
+#include "GameLib.h"
 
-#define Splash true
+
+
+#define Splash false
 
 bool init();
 void shut();

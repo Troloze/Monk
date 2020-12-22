@@ -3,10 +3,20 @@
 static object * root = NULL;
 static bool updateSituation;
 
-object * createObject(Sint32 x, Sint32 y) {
+object * createObject(Sint32 x, Sint32 y, Uint8 mask, Uint8 type, void * item) {
     object * toReturn = (object *) malloc(sizeof(object));  // Alocando a memória do novo objeto.
+    if (toReturn == NULL) {
+        errorSet("createObject: Não foi possível alocar objeto.");
+        return NULL;
+    }
     toReturn->childrenCount = 0;                            // O objeto não tem nenhum filial no momento de sua criação.
     toReturn->children = malloc(0);                         // Preparando o vetor children para poder ser realocado no futuro.
+    if (toReturn->children = NULL) {
+        errorSet("createObject: Não foi possível alocar vetor de filiais do objeto.");
+        free(toReturn);
+        return NULL;
+    }
+    
     toReturn->localX = x;                                   // Setando a posição x do novo objeto.
     toReturn->localY = y;                                   // Setando a posição y do novo objeto.
     toReturn->parent = NULL;                                // Deixando o parente como NULL para poder realizar a parentagem com o root.
@@ -74,6 +84,25 @@ object * getRoot() {
     return root;
 }
 
+bool setMessage(object * obj, Uint16 message, char * arg) {
+    obj->message = message;
+    if (obj->arg != NULL) free(obj->arg);
+    
+    if (arg = NULL) {
+        obj->arg = NULL;
+        return true;
+    }
+    
+    obj->arg = malloc(sizeof(char) * strlen(arg));
+    if (obj->arg == NULL) {
+        errorSetCritical("setMessage: Não foi possível criar mensagem, memória excedida.");
+        return false;
+    }
+    strcpy(obj->arg, arg);
+
+    return true;
+}
+
 void coreUpdate() {
     updateObjectPosition(root);
     updateSituation = !updateSituation;
@@ -95,8 +124,12 @@ void updateObjectPosition(object * targetObject) {
     }
 }
 
-void coreInit() {
+bool coreInit() {
     root = (object *) malloc(sizeof(object));          // Inicializando o objeto raíz e setando seus parâmetros.
+    if (root == NULL) {
+        errorSet("coreInit: Não foi possível alocar a raíz.");
+        return false;
+    }
     root->parent = NULL;
     root->parentPos = 0;
     root->localX = 0;
@@ -105,9 +138,15 @@ void coreInit() {
     root->globalY = 0;
     root->childrenCount = 0;
     root->children = malloc(0);
+    if (root->children == NULL) {
+        errorSet("coreInit: Não foi possível o vetor de filiais da raíz.");
+        free(root);
+        return false;
+    }
     root->isUpdated = true;
 
     updateSituation = false;                // Deixando a situação de atualização falsa.
+    return true;
 }
 
 void coreShut() {

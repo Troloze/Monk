@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 #include "MiscLib.h"
+#include "ErrorLib.h"
 
 #define Key_NotPressed 0    // Para ser usado com os novos estados de teclado, representa uma tecla não pressionada.
 #define Key_JustPressed 1   // Para ser usado com os novos estados de teclado, representa uma tecla que acabou de ser pressionada.
@@ -162,7 +163,7 @@ void inputUpdate();
 /**
  * \brief Inicializa o sistema de Entrada.
  */
-void inputInit();
+bool inputInit();
 
 /**
  * \brief Finaliza o sistema de Entrada.
