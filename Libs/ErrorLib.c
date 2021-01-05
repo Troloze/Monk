@@ -1,5 +1,6 @@
 #include "ErrorLib.h"
 
+static bool isRun = false;
 static char * currentError = NULL;
 static bool critError = false;
 
@@ -10,13 +11,12 @@ bool errorSet(char * error) {
     }
     
     if (currentError != NULL) free(currentError);   // Se o erro atual não for nulo, libera-lo.
-    
+    if (__ERROR_REPORT) printf("%s\n", error);
     currentError = malloc(sizeof(char) * strlen(error));    // Alocar espaço pra string do novo erro.
     if (currentError == NULL) { // Caso não tenha sido possível alocar a memória, retornar um erro crítico.
         errorSetCritical("errorSet: Não foi possivel declarar erro, Limite de memória atingido.\n");
         return false;
     }
-    
     strcpy(currentError, error);    // Copiar a string pro erro.
     
     return true;    // Retornar verdadeiro.
@@ -31,6 +31,14 @@ char * errorGet() {
     return currentError;    // Retorna o erro atual.
 }
 
+void shutInit() {
+    isRun = false;
+}
+
+bool runStatus() {
+    return isRun;
+}
+
 bool errorUpdate() {
     if (critError) return false;    // Caso a flag de erro crítico esteja levantada, retornar falso.
     return true;    // Se não, verdadeiro.
@@ -38,6 +46,7 @@ bool errorUpdate() {
 
 bool errorInit() {
     return errorSet("errorGet: Nenhum erro registrado até o momento."); // Inicalizar o sistema com uma mensagem dizendo que não há erros registrados.
+    isRun = true;
 }
 
 bool errorShut() {

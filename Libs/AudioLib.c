@@ -47,7 +47,6 @@ bool audioDestroyChannels() {
 
     for (int i = 0; i < channelCount; i++) {    // Destruir os canais locais.
         if (channelArray[i] != NULL) { 
-            destroyObject(channelArray[i]->obj);
             free(channelArray[i]);
         }
     }
@@ -64,15 +63,7 @@ audioChannel * audioCreateNewChannel(int i) {
         errorSetCritical("audioCreateNewChannel: Não foi possível alocar um novo canal, memória máxima excedida.\n");
         return NULL;
     }
-   
-    ret->obj = createObject(0,0, OBJ_MASK_AUDIO, AUDIO_TYPE_CHANNEL, ret);   // Criar o objeto do canal.
-    if (ret->obj == NULL) { // Caso não tenha sido possível, retornar erro.
-        free(ret);
-        printf("%s\n", errorGet());
-        errorSet("audioCreateNewChannel: Não foi possível criar o objeto do canal.");
-        return NULL;
-    }
-    ret->world = false;     // Definir os outros parâmetros do canal.
+
     ret->num = i;
     ret->volume = 128;
     ret->panning = 0;
@@ -127,36 +118,26 @@ bool audioUpdate() {
         if (Mix_Playing(i)) {   // Descobrir o estado do canal atual.
             if (Mix_Paused(i)) currentChannel->status = AUDIO_STATUS_PAUSED;
             else currentChannel->status = AUDIO_STATUS_PLAYING;
-        } else currentChannel->status = AUDIO_STATUS_IDLE;
+        } 
+        else currentChannel->status = AUDIO_STATUS_IDLE;
 
         if (currentChannel->volume > 128) currentChannel->volume = 128; // Limitar o volume do canal.
         Mix_Volume(i, currentChannel->volume);  // Setar o volume do canal.
-        if (currentChannel->world) {    // Caso o canal esteja no mundo.
-            distance = min(dBTP(currentChannel->obj->globalX, listener->globalX, currentChannel->obj->globalY, listener->globalY),255); // Descobrir a distancia do canal até o "ouvinte".
-            angle = aBTPD(currentChannel->obj->globalX, listener->globalX, currentChannel->obj->globalY, listener->globalY);    // Descobrir o angulo entre o canal e o "ouvinte".
-            angle -= 90;
-            angle = (angle < 0) ? 360 + angle : angle;
-            Mix_SetPosition(i, angle, distance);    // Setar a posição do canal atual;
-        } 
-        else {    // Caso o canal não esteja no mundo.
-            Mix_SetPanning(i, 127 - currentChannel->panning, 127 + currentChannel->panning);    // Setar o panning do canal.
-        }
+        Mix_SetPanning(i, 127 - currentChannel->panning, 127 + currentChannel->panning);    // Setar o panning do canal.
+        
     }
     return true;    // Retornar verdadeiro.
 }
 
 bool audioInit() {
-    listener = createObject(0, 0, OBJ_MASK_OBJ, OBJ_TYPE_OBJECT, listener);   // Criar objeto "ouvinte".
+    listener = createObject(0, 0, OBJ_MASK_OBJ, OBJ_TYPE_OBJECT, listener, NULL);   // Criar objeto "ouvinte".
     if (listener == NULL) { // Caso não tenha sido possível, retornar um erro.
         printf("%s\n");
         errorSet("audioInit: Não foi possível criar objeto foco.");
         return false;
     }
     
-    if (!Mix_Init(MIX_INIT_OGG)) { // Inicizar o SDL_Mixer, retornar um erro caso não seja possível.
-        errorSet("audioInit: Não foi possível iniciar o SDL_Mixer, utilize Mix_GetError() para mais detalhes.");
-        return false;
-    }
+    Mix_Init(0);
 
     if( Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {    // Abrir o áudio, retornar um erro caso impossível.
         printf("audioInit: SDL_Mixer: Não pode inicializar o mixer. Erro: %s\n", Mix_GetError());

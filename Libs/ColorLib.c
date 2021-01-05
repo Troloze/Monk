@@ -95,3 +95,26 @@ void color8To32(Uint8 a, Uint8 r, Uint8 g, Uint8 b, Uint32 * color) {
     *color *= 256;
     *color += b;
 }
+
+Uint32 mergeAlphat(Uint32 a, Uint32 b) {
+    Uint32 ret;
+    double ar;
+    Uint8 rr, gr, br,
+    aa = ((a & 0xFF000000) >> (3*8)), 
+    ab = ((b & 0xFF000000) >> (3*8)), 
+    ra = ((a & 0xFF0000) >> (2*8)), 
+    rb = ((b & 0xFF0000) >> (2*8)), 
+    ga = ((a & 0xFF00) >> (8)), 
+    gb = ((b & 0xFF00) >> (8)), 
+    ba = ((a & 0xFF)),
+    bb = ((b & 0xFF));
+
+    ar = ((aa/255.0) + (ab/255.0) * (1 - (aa/255.0)));
+    rr = 255 * ((((ra/255.0) * ((aa/255.0))) + ((rb/255.0) * (ab/255.0) * (1 - (aa/255.0)))) / ar);
+    gr = 255 * ((((ga/255.0) * ((aa/255.0))) + ((gb/255.0) * (ab/255.0) * (1 - (aa/255.0)))) / ar);
+    br = 255 * ((((ba/255.0) * ((aa/255.0))) + ((bb/255.0) * (ab/255.0) * (1 - (aa/255.0)))) / ar);
+    
+    ret = (((Uint8)(255 * ar)) << 3 * 8) | (rr << 2 * 8) | (gr << 8) | br;
+    
+    return ret;
+}

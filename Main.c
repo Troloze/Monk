@@ -2,66 +2,75 @@
 
 #undef main
 
+bool running = true;        // Bandeira do loop principal
+
 int main(int argc, char ** argv) {
     // Declarando as variáveis principais aqui.
-    bool running = true;        // Bandeira do loop principal
-
+    const bool printFRate = SHOW_FPS;     // Printar quantos ms um frame demora.
+    Uint32 a = 0;;
     Uint32 frameID;             // Auxiliar para estabilização de frames.
+    Uint32 frameC = 0;              // Valor do frame atual.
     Uint32 frameDelta;          // Auxiliar para estabilização de frames.
-    int FPS = 60;               // Limite de FPS.
-    int fpsMs = 1000/FPS;       // Tempo, em milisegundos, que um frame consome.
+    const int FPS = 60;               // Limite de FPS.
+    const int fpsMs = 1000/FPS;       // Tempo, em milisegundos, que um frame consome.
+    renderMetasprite * logo;
 
     if (!init()) return -1;     // Inicializando todos os sistemas do SDL
-
-    renderSprite * a;
-    renderPalette * p = createPalette(0xFFF33570, 0, 0, 0);
-    object * obj, * mouseObj = createObject(0, 0, OBJ_MASK_OBJ, OBJ_TYPE_OBJECT, mouseObj);
-
-    for (int i = 0; i < 40000; i++) {
-        a = getCoreSprites()->layer[i%CORE_SPRITE_LIMIT];
-        obj = a->object;
-        parentObject(mouseObj, obj, false);
-        addSpriteToRender(a);
-    }
-
-    a = createSprite(getCoreSprites()->layer[CORE_SPRITE_BLANK]->pixels, p, obj, 0, 0, SPRITE_STATE_SHOWN, 0);
-    addSpriteToRender(a);
-
-    a = NULL;
-
-    createTrigger("Exit", SDL_SCANCODE_ESCAPE);
-  
+    
     SDL_Event e;    // Variável que vai receber todos os eventos do SDL.
+
+    if (SHOW_LOGO) {
+        //cursor->state = 0;
+        logo = createMetaFromSheet("Sprites/Logo.bmp",-1, 32, 32, -1 ,-1, -1, -1, 0, 0, NULL, 20);
+        logo->state = SPRITE_STATE_SHOWN;
+        addMetaToRender(logo);
+    }
 
     while (running) {
         frameID = SDL_GetTicks();
-
+        frameC++;
         
         while (SDL_PollEvent(&e) != 0){
             if(e.type == SDL_QUIT) {
                 running = false;
             } 
         }
-
-        // Update do sistema de entrada.
-        inputUpdate();
-        if (getTrigger("Exit").value == 1) {
-            running = false;
+        if (SHOW_LOGO && frameC < 180) {
+            frameDelta = SDL_GetTicks() - frameID;
+            monkOnLogoUpdate();
+            if (printFRate) {
+                printf("FPS: ");
+                if (frameDelta <= fpsMs) printf("%d.", FPS);
+                else printf("%d.", 1000/frameDelta);
+                printf(" Virtual FPS: %d. Delta: %d\n", 1000/frameDelta, frameDelta);
+            }
+            if (frameDelta < fpsMs) SDL_Delay(fpsMs - frameDelta);
+            continue;
+        }
+        if (SHOW_LOGO && frameC == 180) {
+            logo->state = 0;
         }
 
-        mouseObj->localX = getMouse().x * getWindowRatioX();
-        mouseObj->localY = getMouse().y * getWindowRatioY();
-        
-        coreUpdate();
-        audioUpdate();
-        renderUpdate();
-        if (!errorUpdate()) running = false;
+        inputUpdate();          // Update da Entrada.
+        monkUpdate();           // Update do Usuário.
+        coreUpdate();           // Update do Sistema central.  
+        gameUpdate();           // Update das áreas.
+        audioUpdate();          // Update do áudio.
+        renderUpdate();         // Update do render.
+        if (!errorUpdate()) running = false;    // Checando se não há erros.
 
         frameDelta = SDL_GetTicks() - frameID;
-        printf("%d\n", frameDelta);
+        if (printFRate) {
+            printf("FPS: ");
+            if (frameDelta <= fpsMs) printf("%d.", FPS);
+            else printf("%d.", 1000/frameDelta);
+            printf(" Virtual FPS: %d. Delta: %d\n", 1000/frameDelta, frameDelta);
+        }
         if (frameDelta < fpsMs) SDL_Delay(fpsMs - frameDelta);
     }
-    
+
+    if (SHOW_LOGO) destroyObject(logo->obj);
+
     shut();
 
     return 0;
@@ -69,13 +78,14 @@ int main(int argc, char ** argv) {
 
 bool init() {
     errorInit();
-
+    
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO) < 0) {
         printf("SDL não pôde ser inicializado! Erro: %s\n", SDL_GetError());
         return false;
     }
 
-    SDL_ShowCursor(1);
+    
+    SDL_ShowCursor(0);
 
     if (!coreInit()) {
         printf("%s\n", errorGet());
@@ -83,7 +93,7 @@ bool init() {
         errorShut();
         return false;
     }
-
+    
     if (!renderInit()) {
         printf("%s\n", errorGet());
         coreShut();
@@ -100,10 +110,10 @@ bool init() {
         errorShut();
         return false;
     }
-
+    
     fileInit();
-
-    if (!inputInit()) {
+    
+    if (!gameInit()) {
         printf("%s\n", errorGet());
         fileShut();
         audioShut();
@@ -114,16 +124,42 @@ bool init() {
         return false;
     }
     
+    if (!inputInit()) {
+        printf("%s\n", errorGet());
+        fileShut();
+        audioShut();
+        renderShut();
+        coreShut();
+        SDL_Quit();
+        errorShut();
+        gameShut();
+        return false;
+    }
+    
+    if (!monkStart(&running)) {
+        fileShut();
+        audioShut();
+        renderShut();
+        coreShut();
+        SDL_Quit();
+        errorShut();
+        gameShut();
+        fileShut();
+        return false;
+    }
+
     return true;
 }
 
 void shut() {
+    monkExit();
+    shutInit();
     inputShut();
     fileShut();
     audioShut();
-    renderShut();
     coreShut();
+    gameShut();
+    renderShut();
     SDL_Quit();
     errorShut();
 }
-

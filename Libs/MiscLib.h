@@ -15,6 +15,10 @@
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
+#define rad2deg(a) (a * 180.0 / M_PI)
+
+#define deg2rad(a) (a * M_PI / 180.0)
+
 #define dabs(v) ((v > 0) ? v : -v)
 
 #define square(v) (v * v)
@@ -85,5 +89,11 @@
 #define angleBetweenTwoPointsDegrees(x0, x1, y0, y1) (aBTPR(x0, x1, y0, y1) * 180.0 / M_PI)
 
 #define aBTPD(x0, x1, y0, y1) angleBetweenTwoPointsDegrees(x0, x1, y0, y1)
+
+#define areaOverlap(x0, y0, w0, h0, x1, y1, w1, h1) ((max((x0 + w0) - x1, (x1 + w1) - x0) < w0 + w1) && (max((y0 + h0) - y1, (y1 + h1) - y0) < h0 + h1))
+
+#define openMem(p, pos, max, size)  memmove(p + pos + 1, p + pos, (max - pos) * size)
+
+#define closeMem(p, pos, max, size) memmove(p + pos, p + pos + 1, (max - pos) * size)
 
 #endif

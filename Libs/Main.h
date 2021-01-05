@@ -2,25 +2,21 @@
 #define __Main_Tro
 
 #define _USE_MATH_DEFINES
+#define ERROR_REPORT
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <math.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
-#include "Core.h"
-#include "InputLib.h"
-#include "RenderLib.h"
-#include "AudioLib.h"
-#include "ColorLib.h"
-#include "FileLib.h"
-#include "ErrorLib.h"
-#include "GameLib.h"
+#include "../GameImport.h"
 
+#ifdef __LOGO
+    #define SHOW_LOGO true
+#else
+    #define SHOW_LOGO false
+#endif
 
-
-#define Splash false
+#ifdef PRINT_FPS
+    #define SHOW_FPS true
+#else
+    #define SHOW_FPS false
+#endif
 
 bool init();
 void shut();

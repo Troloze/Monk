@@ -8,6 +8,12 @@
 
 #define reportError() printf("%s\n", errorGet())
 
+#ifdef ERROR_REPORT
+    #define __ERROR_REPORT true
+#else
+    #define __ERROR_REPORT false
+#endif
+
 /**
  * \brief Função usada pra declarar erros.
  * 
@@ -28,6 +34,10 @@ void errorSetCritical(char * error);
  * \return Último erro declarado pelo programa.
  */
 char * errorGet();
+
+void shutInit();
+
+bool runStatus();
 
 /**
  * \brief Atualiza o sistema de erro.

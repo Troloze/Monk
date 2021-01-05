@@ -3,8 +3,10 @@
 
 #define OBJ_MASK_RENDER 2
 #define RENDER_TYPE_SPRITE 0
-#define RENDER_TYPE_META 1
-#define RENDER_TYPE_CAMERA 2
+#define RENDER_TYPE_LAYER 1
+#define RENDER_TYPE_META 2
+#define RENDER_TYPE_CAMERA 3
+
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -46,21 +48,36 @@
  * \param object objeto do sprite.
  */
 typedef struct renderSprite {
-    Uint8 state;                // Estado do sprite: 0bXXXXSFRR X - Para uso futuro, S - Visivel, F - Espelhado, R - Rotacionado.
+    Uint8 state;                // Estado do sprite: 0bXXXXSFRR (X - Para uso futuro, S - Visivel, F - Espelhado, R - Rotacionado).
     Uint8 * pixels;             // Parte visivel do sprite.
     Uint8 layer;                // 255 sendo mais perto da tela, 0 mais distante.
     void * palette;             // Ponteiro para a paleta a ser usada na hora de renderizar o sprite.
-    object * object;            // Objeto renderizador.
+    object * obj;               // Objeto renderizador.
+    void * meta;                // Metasprite em que está incluído.
 } renderSprite;
+
+/**
+ * \brief Layer de sprites.
+ * 
+ * \param size tamanho do layer.
+ * \param layer o vetor de ponteiros para os sprites.
+ */
+typedef struct renderGroup {
+    Uint32 size;
+    renderSprite ** group;
+} renderGroup;
 
 /**
  * \brief Objeto metasprite.
  * 
- * \param name nome do metasprite.
  * \param object objeto do metasprite.
+ * \param meta Layeres que compõem o metasprite.
+ * \param metaSize Quantidade de layeres no metasprite.
+ * \param state Estado do metasprite.
  */
 typedef struct renderMetasprite {
-    object * object;        // Objeto renderizador.
+    object * obj;           // Objeto renderizador.
+    Uint8 state;            // Estado dos sprites.
 } renderMetasprite;
 
 /**
@@ -99,13 +116,8 @@ typedef struct renderWindow {
  * \param object objeto da câmera.
  */
 typedef struct renderCamera {
-    object * object;
+    object * obj;
 } renderCamera;
-
-typedef struct renderLayer {
-    Uint32 size;
-    renderSprite ** layer;
-} renderLayer;
 
 /**
  * \brief Recebe um pixel e retorna o valor que o bit representa.
@@ -148,86 +160,109 @@ SDL_Surface * loadSurface(char * path);
 /**
  * \brief Esta função obtem sprites 8x8 dentro de uma imagem, já com suas paletas, e os guarda em um vetor.
  * 
- * \param spriteCount Quantos sprites você quer que sejam obtidos.
+ * \param sheetPath Endereço do spritesheet no sistema.
+ * \param spriteCount Quantos sprites você quer que sejam obtidos. -1 é lido como todos os sprites dentro da área.
  * \param stx Número de colunas de sprites.
  * \param sty Número de linhas de sprites.
- * \param spriteArray Vetor em que os sprites serão guardados.
- * \param sheetPath Endereço do spritesheet no sistema.
+ * \param x0 Primeiro sprite em X a ser importado. -1 é lido como 0.
+ * \param x1 Último sprite em X a ser importado. -1 é lido como stx.
+ * \param y0 Primeiro sprite em Y a ser importado. -1 é lido como 0.
+ * \param y1 Último sprite em Y a ser importado. -1 é lido como sty.
+ * \param followSheetPos Caso seja verdadeiro, os sprites serão posicionados como são na spriteSheet, caso contrário todos os sprites estarão em (0,0).
+ * \param spriteLayer Layer em que os sprites serão adicionados.
  * 
- * \return True caso a função tenha sido bem sucedida, False caso contrário.
+ * \return O layer com os sprites importados, ou NULL em caso de erro.
  */
-renderLayer * getSpritesFromSheetPalette(int spriteCount, int stx, int sty, char * sheetPath);
+renderGroup * getSpritesFromSheet(char * sheetPath, int spriteCount, int stx, int sty, int x0, int x1, int y0, int y1, bool followSheetPos, Uint8 spriteLayer);
 
 /**
  * \brief Cria um sprite com as propriedades colocadas.
- * 
- * \param name Nome do sprite.
+ *
  * \param pixels Imagem do sprite.
  * \param palette Paletta em que o sprite será desenhado.
  * \param parent Parente do sprite. Pode ser NULL.
  * \param x posição x do novo sprite em relação ao parente. Caso o parente seja NULL, será a posição global.
  * \param y posição y do novo sprite em relação ao parente. Caso o parente seja NULL, será a posição global.
  * \param state Forma como o sprite será desenhado. Utilize as flags SPRITE_ para isso, para múltiplas use |.
+ * \param laye Layer do sprite.
  * 
- * \return Um novo sprite.
+ * \return Um novo sprite. Ou false em caso de erro.
  */
-renderSprite * createSprite(Uint8 * pixels, renderPalette * palette, object * parent, Sint32 x, Sint32 y, Uint8 state, Uint8 layer);
+renderSprite * createSprite(Uint8 * pixels, renderPalette * palette, object * parent, char * inst, Sint32 x, Sint32 y, Uint8 state, Uint8 layer);
 
 /**
  * \brief Adiciona as informações de pixels no armazém.
  * 
  * \param pixels Sprite que será adicionado ao armazém.
+ * 
+ * \return O ponteiro para os pixels. Ou NULL em caso de erro.
  */
 Uint8 * loadSpritePixels(Uint8 * pixels);
 
 /**
- * \brief Função que cria um novo metasprite.
+ * \brief Cria um layer com o tamanho dado.
  * 
- * \param name Nome do novo metasprite.
- * \param sprites vetor com os sprites que serão usados no metasprite.
- * \param pos vetor da construção do metasprite.
- * \param spriteCount número de sprites no vetor "sprites".
- * \param metaSizeX tamanho X do metasprite, em sprites. 
- * \param metaSizeY tamanho Y do metasprite, em sprites.
- * \param parent Objeto que será associado ao novo metasprite como parente.
- * \param x posição x local do metasprite.
- * \param y posição y local do metasprite.
- *
-renderMetasprite createMetasprite(renderSprite * sprites, Sint32 * pos, Sint32 spriteCount, Sint32 metaSizeX, Sint32 metaSizeY, object * parent, Sint32 x, Sint32 y);
+ * \param size Tamanho do layer.
+ * \param x Posição X do objeto do layer.
+ * \param y Posição Y do objeto do layer.
+ * \param parent Objeto parente, NULL caso não queira parentes.
+ * 
+ * \return Um render Layer novo. Ou NULL em caso de erro.
+ */
+renderGroup * createGroup(Uint32 size, Sint32 x, Sint32 y, object * parent, char * inst);
 
 /**
- * \brief Cria um novo metasprite usando uma sheet.
+ * \brief Cria um metasprite.
  * 
- * \param sheetPath caminho para o arquivo da sheet.
- * \param pathX0 Primeiro sprite do metasprite na sheet, em X.
- * \param pathY0 Primeiro sprite do metasprite na sheet, em Y.
- * \param metaWidth Número de sprites em X do metasprite.
- * \param metaHeight Número de sprites em Y do metasprite.
- * \param palette Ponteiro para paleta global do metasprite.
- * \param parent Objeto que terá o objeto do metasprite como parente.
- * \param x Posição local X do metasprite.
- * \param y Posição local Y do metasprite.
+ * \param x Posição x do objeto metasprite.
+ * \param y Posição y do objeto metasprite.
+ * \param parent Parente do objeto metasprite.
  * 
- * \return um metasprite com seus componentes afiliados.
- *
-renderMetasprite createMetaspriteFromSheet(char * sheetPath ,Uint16 pathX0, Uint16 pathY0, Uint16 metaWidth, Uint16 metaHeight, renderPalette * palette, object * parent, Sint32 x, Sint32 y);
+ * \return Ponteiro para o metasprite criado, NULL em caso de erros. 
+ */
+renderMetasprite * createMeta(Sint32 x, Sint32 y, object * parent, char * inst);
 
 /**
- * \brief Cria um novo metasprite já colorido usando uma sheet.
+ * \brief Adiciona um layer ao metasprite.
  * 
- * \param sheetPath caminho para o arquivo da sheet.
- * \param pathX0 Primeiro sprite do metasprite na sheet, em X.
- * \param pathY0 Primeiro sprite do metasprite na sheet, em Y.
- * \param metaWidth Número de sprites em X do metasprite.
- * \param metaHeight Número de sprites em Y do metasprite.
- * \param parent Objeto que terá o objeto do metasprite como parente.
- * \param x Posição local X do metasprite.
- * \param y Posição local Y do metasprite.
+ * \param meta Metasprite que terá o layer adicionado.
+ * \param layer Layer que será adicionado ao metasprite.
  * 
- * \return um metasprite com seus componentes afiliados.
- *
-renderMetasprite createMetaspriteFromSheetPalette(char * sheetPath, Uint16 pathX0, Uint16 pathY0, Uint16 metaWidth, Uint16 metaHeight, object * parent, Sint32 x, Sint32 y);
-//*/
+ * \return o Metasprite dado, ou NULL em caso de erros.
+ */
+renderMetasprite * addToMeta(renderMetasprite * meta, renderGroup * group);
+
+/**
+ * \brief Função que adiciona um sprite a um layer. NÃO USE ISSO EM LAYERES INCOMPLETOS, SOMENTE EM LAYERES CHEIOS.
+ * 
+ * \param layer Layer que terá o sprite adicionado.
+ * \param sprite Sprite que será adicionado ao layer.
+ * \param parent Se verdadeiro, irá realizar a parentagem do objeto sprite e do objeto layer.
+ * 
+ * \return Layer de entrada, ou NULL em caso de erro.
+ */
+renderGroup * addToGroup(renderGroup * group, renderSprite * sprite);
+
+
+/**
+ * \brief Cria um metasprite a partir de um spritesheet. Cria somente um layer e novos layeres podem ser anexados posteriormente.
+ * 
+ * \param path Caminho do metasprite.
+ * \param spriteCount Quantidade de sprites a serem importados, lidos da esquerda para direita, de cima pra baixo. Use -1 para importar todos os sprites da área dada.
+ * \param stx Quantidade de sprites na sheet em X.
+ * \param sty Quantidade de sprites na sheet em Y.
+ * \param x0 Primeiro sprite em X da área de importção. -1 é lido como 0.
+ * \param x1 Último sprite em X da área de importação. -1 é lido como stx.
+ * \param y0 Primeiro sprite em Y da área de importação. -1 é lido comp 0.
+ * \param y1 Último sprite em Y da área de importação. -1 é lido como sty.
+ * \param x Posição x do objeto metasprite.
+ * \param y Posição y do objeto metasprite.
+ * \param parent Objeto que será parente do objeto metasprite.
+ * \param layer Layer dos sprites dentro do metasprite.
+ * 
+ * \return Metasprite com os sprites importados no layer 0. Ou NULL em caso de erro.
+ */
+renderMetasprite * createMetaFromSheet(char * path, int spriteCount, int stx, int sty, int x0, int x1, int y0, int y1, Sint32 x, Sint32 y, object * parent, Uint8 layer);
 
 /**
  * \brief Cria uma paleta nova com as cores dadas.
@@ -237,15 +272,14 @@ renderMetasprite createMetaspriteFromSheetPalette(char * sheetPath, Uint16 pathX
  * \param color3 Cor 3 da paleta.
  * \param color4 Cor 4 da paleta.
  * 
- * \return O ponteiro para a paleta criada.
+ * \return O ponteiro para a paleta criada. Ou NULL em caso de erros.
  */
-
 renderPalette * createPalette(Uint32 color1, Uint32 color2, Uint32 color3, Uint32 color4);
 
 /**
  * \brief Cria uma paleta vazia. 
  * 
- * \return O ponteiro para a paleta criada.
+ * \return O ponteiro para a paleta criada. Ou NULL em caso de erros.
  */
 renderPalette * createEmptyPalette();
 
@@ -263,31 +297,72 @@ void changeCamera(renderCamera * newCamera);
  */
 renderCamera * getDefaultCamera();
 
+
+object * cloneSprite(object * source, char * inst);
+
+object * cloneMeta(object * source, char * inst);
+
+
 /**
  * \brief Adiciona um sprite ao layer de renderização.
  * 
  * \param sprite Novo sprite a ser adicionado.
+ * 
+ * \return True, ou false em caso de erros.
  */
 bool addSpriteToRender(renderSprite * sprite);
 
 /**
- * \brief Limpa o layer de renderização, apagando todos os seus sprites.
+ * \brief Adiciona todos os sprites do metasprite ao layer de renderização.
+ * 
+ * \param meta Metasprite que terá todos os seus sprites renderizados.
+ * 
+ * \return True, ou false em caso de erro.
  */
-bool clearLayer();
+bool addMetaToRender(renderMetasprite * meta);
+
+/**
+ * \brief Limpa o layer de renderização, apagando todos os seus sprites.
+ * 
+ * \return True, ou false em caso de erro.
+ */
+bool clearRenderLayer();
 
 /**
  * \brief Libera todos os sprites do layer dado.
  * 
  * \param layer Layer que terá seus sprites liberados.
+ * 
+ * \return True, ou false em caso de erros.
  */
-bool clearSpriteLayer(renderLayer * layer);
+bool clearLayer(renderGroup * group);
 
 /**
  * \brief Libera o sprite.
  * 
  * \param sprite Sprite a ser Liberado
  */
-bool clearSprite(renderSprite * sprite);
+bool freeSprite(renderSprite * sprite);
+
+/**
+ * \brief Libera a memória de um layer.
+ * 
+ * \param layer Layer que será liberado.
+ * \param removeSprites Caso verdadeiro, todos os sprites do layer serão liberados.
+ * 
+ * \return True, ou false em caso de erro.
+ */
+bool freeGroup(renderGroup * group, bool removeSprites);
+
+/**
+ * \brief Libera a memória de um metasprite.
+ * 
+ * \param removeLayer Caso verdadeiro, irá liberar todos os layeres do metasprite.
+ * \param removeSprites Caso verdadeiro, irá liberar todos os sprites dos layeres. Não irá fazer nada caso removeLayer seja falso.
+ * 
+ * \return True, ou false em caso de erro.
+ */
+bool freeMeta(renderMetasprite * meta);
 
 /**
  * \brief Libera todos os sprites carregados no armazém.
@@ -311,13 +386,13 @@ void renderFrame(SDL_Surface * blitSurface);
 /**
  * \brief Renderiza o sprite. LEMBRE DE TRANCAR A SUPERFÍCIE ANTES DE USAR!
  * 
+ * \param blitSurface Superfície em que os sprites serão renderizados.
  * \param sprite Sprite a ser renderizado.
  */
 void renderCurrentSprite(SDL_Surface * blitSurface,renderSprite * sprite);
 
 /**
  * \brief Atualiza todos os sistemas da RenderLib, deve ser chamada uma vez por frame.
- * 
  */
 void renderUpdate();
 
@@ -326,7 +401,7 @@ void renderUpdate();
  * 
  * \return Layer Core. 
  */
-renderLayer * getCoreSprites();
+renderGroup * getCore();
 
 /**
  * \brief Função que retorna o estado da janela.
@@ -334,6 +409,10 @@ renderLayer * getCoreSprites();
  * \return o estado da janela.
  */
 renderWindow * getWindowState();
+
+Uint32 getBgColor();
+
+void setBgColor(Uint32 newColor);
 
 /**
  * \brief Função que inicializa os sistemas de imagem e janela do SDL.

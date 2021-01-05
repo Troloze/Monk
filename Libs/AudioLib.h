@@ -19,11 +19,9 @@
 
 typedef struct audioChannel {
     int num; 
-    bool world;
     Uint8 volume;
     Sint8 panning;
     Uint8 status;
-    object * obj;
 } audioChannel;
 
 typedef Mix_Chunk audioChunk;
