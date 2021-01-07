@@ -1,5 +1,6 @@
 #include "ErrorLib.h"
 
+static bool isRun = false;
 static char * currentError = NULL;
 static bool critError = false;
 
@@ -30,6 +31,14 @@ char * errorGet() {
     return currentError;    // Retorna o erro atual.
 }
 
+void shutInit() {
+    isRun = false;
+}
+
+bool runStatus() {
+    return isRun;
+}
+
 bool errorUpdate() {
     if (critError) return false;    // Caso a flag de erro crítico esteja levantada, retornar falso.
     return true;    // Se não, verdadeiro.
@@ -37,6 +46,7 @@ bool errorUpdate() {
 
 bool errorInit() {
     return errorSet("errorGet: Nenhum erro registrado até o momento."); // Inicalizar o sistema com uma mensagem dizendo que não há erros registrados.
+    isRun = true;
 }
 
 bool errorShut() {

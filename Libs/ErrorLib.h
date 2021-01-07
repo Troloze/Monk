@@ -36,6 +36,18 @@ void errorSetCritical(char * error);
 char * errorGet();
 
 /**
+ * \brief Função que inicializa o fim do programa
+ */
+void shutInit();
+
+/**
+ * \brief Função que retorna se o programa está rodando ou não.
+ * 
+ * \return True caso o programa ainda esteja rodando, false caso contrário
+ */
+bool runStatus();
+
+/**
  * \brief Atualiza o sistema de erro.
  * 
  * \return True caso esteja tudo bem, false caso um erro crítico tenha sido declarado.
