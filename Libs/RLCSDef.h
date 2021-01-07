@@ -1,6 +1,11 @@
 #ifndef __RenderLib_Core_Sprites_Definitions_Tro
 #define __RenderLib_Core_Sprites_Definitions_Tro
 
+// Isso é usado para obter os sprites principais do sistema usando getCore()
+// Exemplo:
+// renderSprite * sprite = getCore()->group[CORE_SPRITE_A];
+// Contudo não é recomendado usar os sprites principais, mas sim obter os pixels para poder criar um novo sprite igual.
+
 #define CORE_SPRITE_A 0
 #define CORE_SPRITE_B 1
 #define CORE_SPRITE_C 2
@@ -75,24 +80,25 @@
 #define CORE_SPRITE_SAVE 71
 #define CORE_SPRITE_TRASH 72
 #define CORE_SPRITE_BALL 73
-#define CORE_SPRITE_RETURN 74
-#define CORE_SPRITE_ROUNDED_BOX_CORNER 75
-#define CORE_SPRITE_ROUNDED_BOX_SIDE 76
-#define CORE_SPRITE_SPIKED_BOX_CORNER_1 77
-#define CORE_SPRITE_SPIKED_BOX_CORNER_2 78
-#define CORE_SPRITE_SPIKED_BOX_SIDE 79
-#define CORE_SPRITE_GRADIENT_ROUNDED_BOX_CORNER 80
-#define CORE_SPRITE_GRADIENT_ROUNDED_BOX_SIDE 81
-#define CORE_SPRITE_GRADIENT 82
-#define CORE_SPRITE_CLOCK 83
-#define CORE_SPRITE_BLANK 84
-#define CORE_SPRITE_CURSOR_1 85
-#define CORE_SPRITE_CURSOR_2 86
-#define CORE_SPRITE_LINE_CROSS 87
-#define CORE_SPRITE_LINE_STRAIGHT 88
-#define CORE_SPRITE_LINE_CORNER 89
-#define CORE_SPRITE_LINE_T 90
-#define CORE_SPRITE_LINE_END 91
-#define CORE_SPRITE_LIMIT 92
+#define CORE_SPRITE_SOUND 74
+#define CORE_SPRITE_RETURN 75
+#define CORE_SPRITE_ROUNDED_BOX_CORNER 76
+#define CORE_SPRITE_ROUNDED_BOX_SIDE 77
+#define CORE_SPRITE_SPIKED_BOX_CORNER_1 78
+#define CORE_SPRITE_SPIKED_BOX_CORNER_2 79
+#define CORE_SPRITE_SPIKED_BOX_SIDE 80
+#define CORE_SPRITE_GRADIENT_ROUNDED_BOX_CORNER 81
+#define CORE_SPRITE_GRADIENT_ROUNDED_BOX_SIDE 82
+#define CORE_SPRITE_GRADIENT 83
+#define CORE_SPRITE_CLOCK 84
+#define CORE_SPRITE_BLANK 85
+#define CORE_SPRITE_CURSOR_1 86
+#define CORE_SPRITE_CURSOR_2 87
+#define CORE_SPRITE_LINE_CROSS 88
+#define CORE_SPRITE_LINE_STRAIGHT 89
+#define CORE_SPRITE_LINE_CORNER 90
+#define CORE_SPRITE_LINE_T 91
+#define CORE_SPRITE_LINE_END 92
+#define CORE_SPRITE_LIMIT 93    // Número de sprites principais do sistema.
 
 #endif

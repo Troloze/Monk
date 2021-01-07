@@ -1,22 +1,33 @@
 #ifndef __Main_Tro
 #define __Main_Tro
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <math.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
-#include "Core.h"
-#include "InputLib.h"
-#include "RenderLib.h"
-#include "AudioLib.h"
-#include "ColorLib.h"
-#include "FileLib.h"
+#define _USE_MATH_DEFINES
+#define ERROR_REPORT
 
-#define Splash true
+#include "../GameImport.h"
 
+#ifdef __LOGO
+    #define SHOW_LOGO true
+#else
+    #define SHOW_LOGO false
+#endif
+
+#ifdef PRINT_FPS
+    #define SHOW_FPS true
+#else
+    #define SHOW_FPS false
+#endif
+
+/**
+ * \brief Função que inicializa todos os sistemas.
+ * 
+ * \return true, ou false em caso de erro.
+ */
 bool init();
+
+/**
+ * \brief Função que finaliza todos os sistemas.
+ */
 void shut();
 
 #endif

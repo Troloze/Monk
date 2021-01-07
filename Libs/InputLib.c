@@ -64,6 +64,7 @@ inputMouse getMouse() {
 }
 
 void createAxis(char * name, Uint8 weight, short int posKey, short int negKey) {
+    if (name == NULL) return;
     for (int i = 0; i < axisCount; i++) {
         if (axisArray[i].name == name) {
             printf("Couldn't create new axis. There already exists an axis with the name \"%s\".",name);
@@ -149,12 +150,14 @@ void updateAxis() {
                 if (cValue < 1) cValue += (cWeight + 1)/256.0;
                 if (cValue > 1) cValue = 1;
             }
-        } else if (isNeg && !isPos) {   // Se somente a tecla negativa está ativa.
+        } 
+        else if (isNeg && !isPos) {   // Se somente a tecla negativa está ativa.
             if (cValue != -1){          // E o valor é diferente de -1.
                 if (cValue > -1) cValue -= (cWeight + 1)/256.0;
                 if (cValue < -1) cValue = -1;
             }
-        } else if (isPos == isNeg) {    // Se ambas teclas estão ou ativas ou inativas.
+        } 
+        else if (isPos == isNeg) {    // Se ambas teclas estão ou ativas ou inativas.
             if (cValue != 0){           // E o valor é diferente de 0.
                 if((cWeight + 1)/256.0 >= dAbs(cValue))cValue = 0;
                 else if (cValue >= -1 && cValue < 0) cValue += (cWeight + 1)/256.0;
@@ -196,19 +199,30 @@ void inputUpdate() {
         updateMouse();          // Atualiza o estado do mouse.
         updateTrigger();        // Atualiza os gatilhos.
         updateAxis();           // Atualiza os eixos.
-    } else {
+    } 
+    else {
         printf("Sistemas de Entrada não inicializados.");
     }
 }
 
-void inputInit() {
+bool inputInit() {
     axisCount = 0;
     axisArray = (inputAxis *) malloc(0); 
+    if (axisArray == NULL) {
+        errorSet("inputInit: Não foi possível alocar o vetor de eixos.");
+        return false;
+    }
 
     triggerCount = 0;
     triggerArray = (inputTrigger *) malloc(0);
+    if (triggerArray == NULL) {
+        errorSet("inputInit: Não foi possível alocar o vetor de gatilhos");
+        free(axisArray);
+        return false;
+    }
 
     inputInitialized = true;
+    return true;
 }
 
 void inputShut() {
