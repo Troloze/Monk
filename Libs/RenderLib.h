@@ -374,7 +374,7 @@ bool cleanStorage();
  * 
  * \param sprite Sprite a ser printado no console.
  */
-void IOSpritePrint(renderSprite * sprite);
+void IOSpritePrint(Uint8 * pixels);
 
 /**
  * \brief Renderiza os sprites. LEMBRE DE TRANCAR A SUPERFÍCIE ANTES DE USAR!
@@ -411,6 +411,8 @@ renderGroup * getCore();
 renderWindow * getWindowState();
 
 Uint32 getBgColor();
+
+void changeMetaPalette(renderMetasprite * meta, renderPalette * palette);
 
 void setBgColor(Uint32 newColor);
 

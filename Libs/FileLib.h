@@ -62,7 +62,7 @@ bool writeData(char * name, char * data);
  * 
  * \return NULL caso algúm erro tenha acontecido, valor do dado caso tudo tenha dado certo.
  */
-char * readData();
+char * readData(char * name);
 
 /**
  * \brief Inicializa o sistema de arquivos.

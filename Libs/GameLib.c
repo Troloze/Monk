@@ -4,8 +4,6 @@
 static gameArea ** dump = NULL;
 static Uint8 ** overlap = NULL;
 
-static gameOverlapFunc *** func = NULL;
-
 static gameOverlapFunc zeroF;
 
 static gameOverlapFunc *** toCheckFunc = NULL;
@@ -65,29 +63,6 @@ gameArea * addAreaToDump(gameArea * toDump) {
     const Uint32 lastIndex = dumpPos[64];
 
     toDump->pos = dumpPos[toDump->layer];
-    
-    func = realloc(func, sizeof(gameOverlapFunc **) * (lastIndex + 1));
-    if (!func) {
-        errorSet("addAreaToDump: Não foi possível realocar o func.");
-        return NULL;
-    }
-
-    memmove(func + firstIndex + 1, func + firstIndex, (lastIndex - firstIndex) * sizeof(gameOverlapFunc**));
-    func[firstIndex] = NULL;
-
-    for (int i = 0; i <= lastIndex; i++) {
-        func[i] = realloc(func[i], sizeof(gameOverlapFunc*) * (lastIndex  + 1));
-        if (!func[i]) {
-            errorSet("addAreaToDump: Não foi possível realocar as colunas de func.");
-            return NULL;
-        }
-        memmove(func[i] + firstIndex + 1, func[i] + firstIndex, (lastIndex - firstIndex) * sizeof(gameOverlapFunc*));
-    }
-
-    for (int i = 0; i <= lastIndex; i++) {
-        func[firstIndex][i] = 0;
-        func[i][firstIndex] = 0;
-    }
 
     overlap = realloc(overlap, sizeof(Uint8 *) * (lastIndex + 1));                        // Realocando o overlap para colocar mais um elemento.
     if (!overlap) {
@@ -145,22 +120,6 @@ bool removeAreaFromDump(gameArea * area) {
     const Uint32 firstIndex = area->pos, lastIndex = dumpPos[64] - 1;
     Uint32 pos; 
 
-    free(func[firstIndex]);
-    memmove(func + firstIndex, func + firstIndex + 1, (lastIndex - firstIndex) * sizeof(gameOverlapFunc**));
-    func = realloc(func, sizeof(gameOverlapFunc**) * lastIndex);
-    if (!func) {
-        errorSet("removeAreaFromDump: Não foi possível realocar o func.");
-        return NULL;
-    }
-
-    for(int i = 0; i < lastIndex; i++) {
-        memmove(func[i] + firstIndex, func[i] + firstIndex + 1, (lastIndex - firstIndex) * sizeof(gameOverlapFunc*));
-        func[i] = realloc(func[i], sizeof(gameOverlapFunc*) * lastIndex);
-        if (!func[i]) {
-            errorSet("removeAreaFromDump: Não foi possível realocar as colunas de func.");
-        }
-    }
-
     free(overlap[firstIndex]);
 
     memmove(overlap + firstIndex, overlap + firstIndex + 1, (lastIndex - firstIndex) * sizeof(Uint8 *));
@@ -216,22 +175,24 @@ bool updateArea() {
                             check = dump[y];
                             chInst = check->obj->instance;
                             cFunc = &zeroF;
-                            for (int f = 0; f < checkCount; f++) {
-                                comp = strcmp(cuInst, checkList[f]);
-                                if (comp == 0) {
-                                    for (int f1 = 0; f1 < colCheckPos[f]; f1++) {
-                                        comp = strcmp(chInst, toCheckCol[f][f1]);
-                                        if (comp == 0) {
-                                            cFunc = toCheckFunc[f][f1];
+                            if (cuInst && chInst) {
+                                for (int f = 0; f < checkCount; f++) {
+                                    comp = strcmp(cuInst, checkList[f]);
+                                    if (comp == 0) {
+                                        for (int f1 = 0; f1 < colCheckPos[f]; f1++) {
+                                            comp = strcmp(chInst, toCheckCol[f][f1]);
+                                            if (comp == 0) {
+                                                cFunc = toCheckFunc[f][f1];
+                                            }
+                                            if (comp < 0) {
+                                                break;   
+                                            }
                                         }
-                                        if (comp < 0) {
-                                            break;   
-                                        }
+                                        if (comp < 0) break;
+                                        comp = 0;
                                     }
                                     if (comp < 0) break;
-                                    comp = 0;
                                 }
-                                if (comp < 0) break;
                             }
                             if (areaOverlap(current->obj->globalX, current->obj->globalY, current->width, current->height, check->obj->globalX, check->obj->globalY, check->width, check->height)) {
                                 switch (overlap[j][y]) {
@@ -333,13 +294,11 @@ bool addFuncToInstOverlap(char * inst1, char * inst2, bool (*onEnter)(void * sel
                         exists2 = true;
                         break;
                     }
-
                     if (strcmp(toCheckCol[i][j], inst2) < 0) break;
                 }
                 exists1 = true;
                 break;
             }
-
             if (strcmp(checkList[i], inst1) < 0) break;
         }
     }
@@ -347,7 +306,7 @@ bool addFuncToInstOverlap(char * inst1, char * inst2, bool (*onEnter)(void * sel
     if (!exists1) {
         checkList = realloc(checkList, sizeof(char *) * (checkCount + 1));
         memmove(checkList + pos1 + 1, checkList + pos1, (checkCount - pos1) * sizeof(char*));
-        checkList[pos1] = malloc(sizeof(char) * strlen(inst1));
+        checkList[pos1] = malloc(sizeof(char) * (strlen(inst1) + 1));
         strcpy(checkList[pos1], inst1);
 
         colCheckPos = realloc(colCheckPos, sizeof(Uint32) * (checkCount + 1));
@@ -359,20 +318,20 @@ bool addFuncToInstOverlap(char * inst1, char * inst2, bool (*onEnter)(void * sel
         toCheckCol[pos1] = NULL;
 
         toCheckFunc = realloc(toCheckFunc, sizeof(gameOverlapFunc **) * (checkCount + 1));
-        openMem(toCheckFunc, pos1, checkCount, sizeof(gameOverlapFunc**));
-        toCheckCol[pos1] = NULL;
+        memmove(toCheckFunc + pos1 + 1, toCheckFunc + pos1, (checkCount - pos1) * sizeof(gameOverlapFunc**));
+        toCheckFunc[pos1] = NULL;
 
         checkCount++;
     }
 
     if (!exists2) {
         toCheckCol[pos1] = realloc(toCheckCol[pos1], sizeof(char*) * (colCheckPos[pos1] + 1));
-        openMem(toCheckCol[pos1], pos2, colCheckPos[pos1], sizeof(char*));
-        toCheckCol[pos1][pos2] = realloc(toCheckCol[pos1][pos2], sizeof(char) * strlen(inst2));
+        memmove(toCheckCol[pos1] + pos2 + 1, toCheckCol[pos1] + pos2, (colCheckPos[pos1] - pos2) * sizeof(char*));
+        toCheckCol[pos1][pos2] = malloc(sizeof(char) * (strlen(inst2) + 1));
         strcpy(toCheckCol[pos1][pos2], inst2);
 
         toCheckFunc[pos1] = realloc(toCheckFunc[pos1], sizeof(gameOverlapFunc *) * (colCheckPos[pos1] + 1));
-        openMem(toCheckFunc[pos1], pos2, colCheckPos[pos1], sizeof(gameOverlapFunc *)); 
+        memmove(toCheckFunc[pos1] + pos2 + 1, toCheckFunc[pos1] + pos2, (colCheckPos[pos1] - pos2) * sizeof(gameOverlapFunc *)); 
         toCheckFunc[pos1][pos2] = NULL;
 
         colCheckPos[pos1]++;
@@ -407,16 +366,9 @@ bool gameUpdate() {
     return true;
 }
 
-
-
 bool gameInit() {
-    colCheckPos = malloc(sizeof(Uint32 *) * 2);
     checkCount = 0;
-    if (!colCheckPos) {
-        errorSet("gameInit: Não foi possível alocar o colCheckPos");
-        return false;
-    }
-    
+  
     zeroF.onEnter = NULL;
     zeroF.onExit = NULL;
     zeroF.onOverlap = NULL;
@@ -448,6 +400,34 @@ bool gameInit() {
 
 bool gameShut() {
     Uint32 dumpSize = dumpPos[64];
+    
+    if (checkList) {
+        for (int i = 0; i < checkCount; i++) {
+            if (checkList[i]) free(checkList[i]);
+            if (colCheckPos) {
+                for (int j = 0; j < colCheckPos[i]; j++) {
+                    if (toCheckCol) 
+                        if (toCheckCol[i]) 
+                            if (toCheckCol[i][j]) 
+                                free(toCheckCol[i][j]);
+                    if (toCheckFunc) 
+                        if (toCheckFunc[i]) 
+                            if (toCheckFunc[i][j]) 
+                                free(toCheckFunc[i][j]); 
+                }
+                if (toCheckCol) 
+                    if (toCheckCol[i]) 
+                        free(toCheckCol[i]);
+                if (toCheckFunc) 
+                    if (toCheckFunc[i]) 
+                        free(toCheckFunc[i]);
+            }
+        }
+        free(checkList);
+        if (toCheckCol) free(toCheckCol);
+        if (toCheckFunc) free(toCheckFunc);
+    }
+
     if (dump) {
         free(dump);
         dump = NULL;
@@ -461,4 +441,8 @@ bool gameShut() {
     if (dumpPos) free(dumpPos);
     free(colCheckPos);
     dumpPos = NULL;
+
+    
+
+    return true;
 }

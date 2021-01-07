@@ -4,16 +4,18 @@
 // Aqui se colocam as definições do sistema:
 
 // #define ERROR_REPORT
-// #define __LOGO
+#define __LOGO
 // #define PRINT_FPS
 
 #include "Libs/MainInclude.h"
 
 bool monkStart(bool * running);
 
+bool monkAfterLogo();
+
 bool monkOnLogoUpdate();
 
-bool monkUpdate();
+bool monkUpdate(Uint32 c);
 
 bool monkExit();
 

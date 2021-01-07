@@ -10,7 +10,7 @@ int loadFile(char * path) {
     int ret, cSize;    // Variável q ira retornar o número de dados dentro do save
     int test;
     char * cName = NULL, * cData = NULL;
-    if (currentFile != NULL) {  // Caso o arquivo já estiver aberto, retorna um erro.
+    if (fileStatus != FILE_STATUS_INACTIVE) {  // Caso o arquivo já estiver aberto, retorna um erro.
         printf("Já existe um arquivo aberto.\n");
         return -1;
     }
@@ -56,7 +56,7 @@ int loadFile(char * path) {
 }
 
 bool saveFile(char * path) {
-    if (currentFile != NULL) {  // Checando se já há um arquivo aberto, e nesse caso retornando um erro.
+    if (fileStatus != FILE_STATUS_INACTIVE) {  // Checando se já há um arquivo aberto, e nesse caso retornando um erro.
         printf("Já existe um arquivo aberto.\n");
         return false;
     }

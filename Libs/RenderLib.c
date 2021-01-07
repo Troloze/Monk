@@ -449,12 +449,11 @@ void changeCamera(renderCamera * newCamera) {
 }
 
 bool cleanStorage() {
-    for (int i = 0; i < storageSize; i++) free(storage[i]);
-    storage = realloc(storage, 0);
-    if (storage == NULL) {
-        errorSet("cleanStorage: Não foi possível realocar o armazém");
-        return false;
+    for (int i = 0; i < storageSize; i++) {
+        free(storage[i]);
     }
+    free(storage);
+    storage = NULL;
     storageSize = 0;
 }
 
@@ -614,15 +613,12 @@ void renderCurrentSprite(SDL_Surface * blitSurface,renderSprite * sprite) {
     }
 }
 
-void IOSpritePrint(renderSprite * sprite) {
-    Uint8 * pixels;
+void IOSpritePrint(Uint8 * pixels) {
     int v;
 
-    pixels = sprite->pixels;
-    
     for (int y = 0; y < 8; y++) for (int x = 0; x < 8; x++) {
         
-        v = getByteValue((x%4) * 2, 2, pixels[(y * 2) + x/4]);
+        v = getByteValue((x & 3) * 2, 2, pixels[(y * 2) + x>>2]);
 
         switch (v) {
             case 0:
@@ -648,6 +644,16 @@ void setBgColor(Uint32 newColor) {
 
 Uint32 getBgColor() {
     return bgColor;
+}
+
+void changeMetaPalette(renderMetasprite * meta, renderPalette * palette) {
+    object * c;
+    for (int i = 0; i < meta->obj->childrenCount; i++) {
+        c = (object*)meta->obj->children[i];
+        if (c->mask == OBJ_MASK_RENDER && c->type == RENDER_TYPE_SPRITE) {
+            ((renderSprite*) c->item)->palette = palette;
+        }
+    }
 }
 
 void renderUpdate() {
@@ -827,7 +833,6 @@ void renderShut() {
     free(toRender.group);
     
     cleanStorage();
-    free(storage);
     free(windowState);
     free(allPalettes);
     free(renderMask);

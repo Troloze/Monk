@@ -49,6 +49,8 @@ typedef struct object {
     bool isUpdated;             // Se o objeto foi atualizado no frame.
     bool isInst;
 
+    Uint64 tick;                // Quantidade de frames que se passaram desde que o objeto foi criado
+
     bool (*start)(void * self);
     bool (*update)(void * self);
     bool (*end)(void * self);

@@ -20,7 +20,6 @@ int main(int argc, char ** argv) {
     SDL_Event e;    // Variável que vai receber todos os eventos do SDL.
 
     if (SHOW_LOGO) {
-        //cursor->state = 0;
         logo = createMetaFromSheet("Sprites/Logo.bmp",-1, 32, 32, -1 ,-1, -1, -1, 0, 0, NULL, 20);
         logo->state = SPRITE_STATE_SHOWN;
         addMetaToRender(logo);
@@ -36,40 +35,42 @@ int main(int argc, char ** argv) {
             } 
         }
         if (SHOW_LOGO && frameC < 180) {
-            frameDelta = SDL_GetTicks() - frameID;
+            frameID = SDL_GetTicks();
             monkOnLogoUpdate();
+            frameDelta = SDL_GetTicks() - frameID + 1;
             if (printFRate) {
                 printf("FPS: ");
-                if (frameDelta <= fpsMs) printf("%d.", FPS);
+                if ((frameDelta - 1) <= fpsMs) printf("%d.", FPS);
                 else printf("%d.", 1000/frameDelta);
-                printf(" Virtual FPS: %d. Delta: %d\n", 1000/frameDelta, frameDelta);
+                printf(" Virtual FPS: %d. Delta: %d\n", 1000/frameDelta, frameDelta - 1);
             }
-            if (frameDelta < fpsMs) SDL_Delay(fpsMs - frameDelta);
-            continue;
+            if (frameDelta - 1 < fpsMs) SDL_Delay(fpsMs - frameDelta - 1);
         }
         if (SHOW_LOGO && frameC == 180) {
-            logo->state = 0;
+           logo->state = 0;
+           destroyObject(logo->obj);
+           if (!monkAfterLogo()) {
+               running = 0;
+           }
         }
 
         inputUpdate();          // Update da Entrada.
-        monkUpdate();           // Update do Usuário.
+        monkUpdate(frameC);           // Update do Usuário.
         coreUpdate();           // Update do Sistema central.  
         gameUpdate();           // Update das áreas.
         audioUpdate();          // Update do áudio.
         renderUpdate();         // Update do render.
         if (!errorUpdate()) running = false;    // Checando se não há erros.
 
-        frameDelta = SDL_GetTicks() - frameID;
+        frameDelta = SDL_GetTicks() - frameID + 1;
         if (printFRate) {
             printf("FPS: ");
-            if (frameDelta <= fpsMs) printf("%d.", FPS);
+            if ((frameDelta - 1) <= fpsMs) printf("%d.", FPS);
             else printf("%d.", 1000/frameDelta);
             printf(" Virtual FPS: %d. Delta: %d\n", 1000/frameDelta, frameDelta);
         }
-        if (frameDelta < fpsMs) SDL_Delay(fpsMs - frameDelta);
+        if (frameDelta - 1 < fpsMs) SDL_Delay(fpsMs - frameDelta - 1);
     }
-
-    if (SHOW_LOGO) destroyObject(logo->obj);
 
     shut();
 
@@ -85,7 +86,7 @@ bool init() {
     }
 
     
-    SDL_ShowCursor(0);
+    // SDL_ShowCursor(0);
 
     if (!coreInit()) {
         printf("%s\n", errorGet());
@@ -136,6 +137,7 @@ bool init() {
         return false;
     }
     
+    
     if (!monkStart(&running)) {
         fileShut();
         audioShut();
@@ -147,6 +149,8 @@ bool init() {
         fileShut();
         return false;
     }
+    
+    if (!SHOW_LOGO) monkAfterLogo();
 
     return true;
 }

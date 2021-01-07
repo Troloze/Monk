@@ -33,6 +33,7 @@ object * createObject(Sint32 x, Sint32 y, Uint8 mask, Uint8 type, void * item, c
     }      
     else toReturn->instance = NULL;                       
 
+    toReturn->tick = 0;
     toReturn->isInst = false;
     toReturn->start = NULL;
     toReturn->update = NULL;
@@ -154,6 +155,7 @@ void setObjectInstanceID(object * source, char * instanceID) {
 }
 
 object * instanceObject(object * toInstance, Sint32 x, Sint32 y) {
+    
     if (!toInstance) {
         return NULL;
     }
@@ -243,6 +245,8 @@ void updateObjectPosition(object * targetObject) {
         targetObject->globalX = targetObject->localX + ((object*)targetObject->parent)->globalX;    // Atualizando as posições globais X e Y do objeto.
         targetObject->globalY = targetObject->localY + ((object*)targetObject->parent)->globalY;   
     }
+
+    targetObject->tick++;
 
     targetObject->isUpdated = updateSituation;                                                      // Colocando o sprite como atualizado.
 
