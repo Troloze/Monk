@@ -41,9 +41,10 @@ bool monkStart(bool * running) {
 
     createTrigger("Exit", SDL_SCANCODE_ESCAPE);
 
-    loadFile("SavedData/Fish");
-    killCount = atoi(readData("KillCount"));
-    closeFile();
+    if (loadFile("SavedData/Fish") >= 0) {
+        killCount = atoi(readData("KillCount"));
+        closeFile();
+    }
 
     if (killCount > 0) {
         printf("Você já havia matado %d peixes!\n", killCount);
