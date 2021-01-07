@@ -54,13 +54,16 @@ int main(int argc, char ** argv) {
            }
         }
 
-        inputUpdate();          // Update da Entrada.
-        monkUpdate(frameC);           // Update do Usuário.
-        coreUpdate();           // Update do Sistema central.  
-        gameUpdate();           // Update das áreas.
-        audioUpdate();          // Update do áudio.
-        renderUpdate();         // Update do render.
-        if (!errorUpdate()) running = false;    // Checando se não há erros.
+        inputUpdate();                              // Update da Entrada.
+        if (frameC > 180 || !SHOW_LOGO) {           // Update do programa do usuário.
+            if (!monkUpdate(frameC)) running = false;         
+        }  
+            
+        coreUpdate();                               // Update do Sistema central.  
+        if (!gameUpdate()) running = false;         // Update das áreas.
+        if (!audioUpdate()) running = false;        // Update do áudio.
+        renderUpdate();                             // Update do render.
+        if (!errorUpdate()) running = false;        // Checando se não há erros.
 
         frameDelta = SDL_GetTicks() - frameID + 1;
         if (printFRate) {
