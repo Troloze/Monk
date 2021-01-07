@@ -25,8 +25,7 @@ int loadFile(char * path) {
     free(newPath);  // Liberando a memória da string usada pro caminho com o caminho.
 
     if (currentFile == NULL) {  // Caso o arquivo não tenha sido aberto com sucesso, retornar um erro.
-        printf("Não foi possível carregar o arquivo.\n");
-        return -1;
+        return -2;
     }
 
     fscanf(currentFile, "%d\n", &ret);  // Lendo a quantidade de dados no arquivo.
