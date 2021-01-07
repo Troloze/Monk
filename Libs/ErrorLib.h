@@ -35,10 +35,6 @@ void errorSetCritical(char * error);
  */
 char * errorGet();
 
-void shutInit();
-
-bool runStatus();
-
 /**
  * \brief Atualiza o sistema de erro.
  * 

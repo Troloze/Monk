@@ -16,16 +16,6 @@
 #define Trigger_Ammount 20  // Número máximo de gatilhos a serem usados.
 
 
-/**
- * \brief Esse tipo de dado representa um eixo de entrada.
- * 
- * \param name String que representa o nome do eixo.
- * \param value Valor atual do eixo, atualizado todos os frames.
- * \param weight Taxa de variação do valor, com valor máximo de 255.
- * \param posKey Valor da tecla que irá aumentar o valor, quando precionada.
- * \param negKey Valor da tecla que irá reduzir o valor, quando precionada.
- * 
- */
 typedef struct inputAxis{
     char * name;        // Nome do eixo.
     double value;       // Varia entre -1 e 1;
@@ -34,28 +24,12 @@ typedef struct inputAxis{
     short int negKey;   // Guarda o valor da tecla que irá reduzir o valor quando precionada.
 } inputAxis;
 
-/**
- * \brief Esse tipo de dado representa um gatilho.
- * 
- * \param name String que representa o nome do gatilho.
- * \param value Valor do gatilho.
- * \param triggerKey Valor da tecla que é associada ao gatilho.
- */
 typedef struct inputTrigger{
     char * name;            // Nome do gatilho.
     Uint8 value;            // Valor do gatilho. 0 significa solto, 1 acabou de ser engatilhado, 2 precionado, 3 acabou de ser solto.
     short int triggerKey;   // Guarda o valor da tecla associada ao gatilho.
 } inputTrigger;
 
-/**
- * \brief Esse tipo de dado representa o mouse.
- * 
- * \param x Posição x do mouse.
- * \param y Posição y do mouse.
- * \param leftButtonState Estado do botão esquerdo do mouse.
- * \param middleButtomState Estado do botão do meio do mouse.
- * \param rightButtomState Estado do botão direito do mouse.
- */
 typedef struct inputMouse{
     int x;
     int y;

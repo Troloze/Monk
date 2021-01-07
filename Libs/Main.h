@@ -18,7 +18,16 @@
     #define SHOW_FPS false
 #endif
 
+/**
+ * \brief Função que inicializa todos os sistemas.
+ * 
+ * \return true, ou false em caso de erro.
+ */
 bool init();
+
+/**
+ * \brief Função que finaliza todos os sistemas.
+ */
 void shut();
 
 #endif

@@ -1,6 +1,11 @@
 #ifndef __RenderLib_Core_Sprites_Definitions_Tro
 #define __RenderLib_Core_Sprites_Definitions_Tro
 
+// Isso é usado para obter os sprites principais do sistema usando getCore()
+// Exemplo:
+// renderSprite * sprite = getCore()->group[CORE_SPRITE_A];
+// Contudo não é recomendado usar os sprites principais, mas sim obter os pixels para poder criar um novo sprite igual.
+
 #define CORE_SPRITE_A 0
 #define CORE_SPRITE_B 1
 #define CORE_SPRITE_C 2
@@ -94,6 +99,6 @@
 #define CORE_SPRITE_LINE_CORNER 90
 #define CORE_SPRITE_LINE_T 91
 #define CORE_SPRITE_LINE_END 92
-#define CORE_SPRITE_LIMIT 93
+#define CORE_SPRITE_LIMIT 93    // Número de sprites principais do sistema.
 
 #endif

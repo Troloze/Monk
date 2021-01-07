@@ -13,32 +13,16 @@
 #define OBJ_TYPE_UNDEFINED 0    // Para objetos que se desassociaram ao item.
 #define OBJ_TYPE_OBJECT 1       // Para objetos sem nenhuma associação.
 
-/**
- * \brief Objeto.
- * 
- * \param localX posição x em relação ao parente.
- * \param localY posição y em relação ao parente.
- * 
- * \param globalX posição x em relação à tela.
- * \param globalY posição y em relação à tela.
- * 
- * \param parentType guarda o tipo de objeto do parente.
- * \param parent ponteiro para o parente.
- * \param childrenCount número de objetos filiados.
- * \param children ponteiros para todos os objetos filiados.
- * 
- */
+
 typedef struct object {
     Uint8 type, mask;           // Tipo de item que está associado ao objeto.
     void * item;                // Item que está associado ao objeto.
 
     Sint32 localX;              // Posição X em relação ao parente.
     Sint32 localY;              // Posição Y em relação ao parente.
-    //double localRot;            // Rotação em relação ao parente.
 
     Sint32 globalX;             // Posição X global.
     Sint32 globalY;             // Posição X global.
-    //double globalRot;           // Rotação global
 
     Uint32 parentPos;           // Posição do objeto entre os filiais do parente.
     void * parent;              // Ponteiro para o objeto parente.
@@ -51,9 +35,9 @@ typedef struct object {
 
     Uint64 tick;                // Quantidade de frames que se passaram desde que o objeto foi criado
 
-    bool (*start)(void * self);
-    bool (*update)(void * self);
-    bool (*end)(void * self);
+    bool (*start)(void * self); // Função que será chamada quando o objeto foi instanciada.
+    bool (*update)(void * self);// Função que será chamada a todo frame.
+    bool (*end)(void * self);   // Função que será chamada quando o objeto for destruído.
 } object;
 
 #include "InputLib.h"
@@ -69,13 +53,29 @@ typedef struct object {
  * 
  * \param x posição X do objeto.
  * \param y posição y do objeto.
+ * \param item Ponteiro para o item cujo objeto será criado.
+ * \param inst String com o ID de instanciamento.
  * 
  * \return Ponteiro para o novo objeto.
  */
 object * createObject(Sint32 x, Sint32 y, Uint8 mask, Uint8 type, void * item, char * inst);
 
+/**
+ * \brief Função que associa funções à um objeto.
+ * 
+ * \param obj Objeto que terá as funções associadas.
+ * \param start Função que será chamada quando o objeto for instanciado.
+ * \param update Função que será chamada a todo frame.
+ * \param end Função que será chamada quando o objeto for destruído.
+ */
 void addFuncToObj(object * obj, bool (*start)(void * self), bool (*update)(void * self), bool (*end)(void * self));
 
+/**
+ * \brief Função que associa um ID a um objeto e todos os seus filhos.
+ * 
+ * \param source Objeto que terá a ID associada.
+ * \param instanceID String com o ID de instanciamento.
+ */
 void setObjectInstanceID(object * source, char * instanceID);
 
 /**
@@ -85,6 +85,15 @@ void setObjectInstanceID(object * source, char * instanceID);
  */
 object * getRoot();
 
+/**
+ * \brief Função que instancia um objeto.
+ * 
+ * \param toInstance Objeto que será instanciado.
+ * \param x Posição X do objeto a ser instanciado.
+ * \param y posição Y do objeto a ser instanciado.
+ * 
+ * \return Novo objeto.
+ */
 object * instanceObject(object * toInstance, Sint32 x, Sint32 y);
 
 /**
@@ -116,6 +125,13 @@ void unparentObject(object * child, bool keepGlobalPosition);
  */
 void coreUpdate();
 
+/**
+ * \brief Função que faz com que o objeto rode a função update associada a si.
+ * 
+ * \param target Objeto a ser atualizado.
+ * 
+ * \return true, ou false em caso de erros. 
+ */
 bool runObjectUpdate(object * target);
 
 /**

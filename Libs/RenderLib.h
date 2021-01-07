@@ -3,9 +3,8 @@
 
 #define OBJ_MASK_RENDER 2
 #define RENDER_TYPE_SPRITE 0
-#define RENDER_TYPE_LAYER 1
-#define RENDER_TYPE_META 2
-#define RENDER_TYPE_CAMERA 3
+#define RENDER_TYPE_META 1
+#define RENDER_TYPE_CAMERA 2
 
 
 #include <stdio.h>
@@ -38,15 +37,6 @@
 #define COLOR3 0xFF00FF00   // Bandeira da cor 3.
 #define COLOR4 0xFF0000FF   // Bandeira da cor 4
 
-/**
- * \brief Objeto sprite.
- * 
- * \param name nome do sprite.
- * \param state Como a imagem será apresentada (A mostra, espelhado e girado)
- * \param pixels Informação dos pixels do sprite. (8x8)
- * \param palette ponteiro para a paleta.
- * \param object objeto do sprite.
- */
 typedef struct renderSprite {
     Uint8 state;                // Estado do sprite: 0bXXXXSFRR (X - Para uso futuro, S - Visivel, F - Espelhado, R - Rotacionado).
     Uint8 * pixels;             // Parte visivel do sprite.
@@ -56,53 +46,23 @@ typedef struct renderSprite {
     void * meta;                // Metasprite em que está incluído.
 } renderSprite;
 
-/**
- * \brief Layer de sprites.
- * 
- * \param size tamanho do layer.
- * \param layer o vetor de ponteiros para os sprites.
- */
 typedef struct renderGroup {
-    Uint32 size;
-    renderSprite ** group;
+    Uint32 size;                // Tamanho do grupo.
+    renderSprite ** group;      // Vetor grupo.
 } renderGroup;
 
-/**
- * \brief Objeto metasprite.
- * 
- * \param object objeto do metasprite.
- * \param meta Layeres que compõem o metasprite.
- * \param metaSize Quantidade de layeres no metasprite.
- * \param state Estado do metasprite.
- */
 typedef struct renderMetasprite {
     object * obj;           // Objeto renderizador.
     Uint8 state;            // Estado dos sprites.
 } renderMetasprite;
 
-/**
- * \brief Objeto paleta
- * 
- * \param color1 Cor representada por 0 0.
- * \param color2 Cor representada por 0 1.
- * \param color3 Cor representada por 1 0.
- * \param color4 Cor representada por 1 1.
- */
 typedef struct renderPalette {
-    Uint32 color1;
-    Uint32 color2;
-    Uint32 color3;
-    Uint32 color4;
+    Uint32 color1;  // Cor 1
+    Uint32 color2;  // Cor 2
+    Uint32 color3;  // Cor 3
+    Uint32 color4;  // Cor 4
 } renderPalette;
 
-/**
- * \brief Objeto estado de janela
- * 
- * \param windowHeight Altura da janela, em pixels.
- * \param windowWidth Largura da janela, em pixels.
- * \param virtualHeight Altura da simulação, em pixels.
- * \param virtualWidth Largura da simulação, em pixels.
- */
 typedef struct renderWindow {
     Uint16 windowHeight;    // Altura da janela.
     Uint16 windowWidth;     // Largura da janela.
@@ -110,13 +70,8 @@ typedef struct renderWindow {
     Uint16 virtualWidth;    // Largura da simulação.
 } renderWindow;
 
-/**
- * \brief Objeto câmera.
- * 
- * \param object objeto da câmera.
- */
 typedef struct renderCamera {
-    object * obj;
+    object * obj; // Objeto da câmera.
 } renderCamera;
 
 /**
@@ -243,7 +198,6 @@ renderMetasprite * addToMeta(renderMetasprite * meta, renderGroup * group);
  */
 renderGroup * addToGroup(renderGroup * group, renderSprite * sprite);
 
-
 /**
  * \brief Cria um metasprite a partir de um spritesheet. Cria somente um layer e novos layeres podem ser anexados posteriormente.
  * 
@@ -297,9 +251,24 @@ void changeCamera(renderCamera * newCamera);
  */
 renderCamera * getDefaultCamera();
 
-
+/**
+ * \brief Duplica um sprite a ser instanciado.
+ * 
+ * \param source Objeto do sprite a ser duplicado.
+ * \param inst ID de instanciamento do novo objeto.
+ * 
+ * \return Objeto do novo sprite.
+ */
 object * cloneSprite(object * source, char * inst);
 
+/**
+ * \brief Função que duplica um metasprite a ser instanciado.
+ * 
+ * \param source Objeto do metasprite a ser duplicado.
+ * \param inst ID de instanciamento do novo metasprite
+ * 
+ * \return Objeto do novo metasprite.
+ */
 object * cloneMeta(object * source, char * inst);
 
 
@@ -410,10 +379,26 @@ renderGroup * getCore();
  */
 renderWindow * getWindowState();
 
+/**
+ * \brief Obtém a cor atual do fundo.
+ * 
+ * \return Cor atual do fundo.
+ */
 Uint32 getBgColor();
 
+/**
+ * \brief Muda a paleta de todos os sprites afiliados ao metasprite.
+ * 
+ * \param meta Metasprite cujos sprites terão a paleta atualizada.
+ * \param palette Nova paleta.
+ */
 void changeMetaPalette(renderMetasprite * meta, renderPalette * palette);
 
+/**
+ * \brief Troca a cor do fundo.
+ * 
+ * \param newColor Nova cor.
+ */
 void setBgColor(Uint32 newColor);
 
 /**
